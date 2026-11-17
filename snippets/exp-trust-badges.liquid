@@ -1,0 +1,32 @@
+{% comment %}
+  Renders the micro-trust badges row under the buy buttons / in sticky bar.
+  Accepts:
+  - block: {Object} Block object with settings
+{% endcomment %}
+
+<div class="exp-trust-badges" {{ block.shopify_attributes }}>
+  <span class="exp-trust-badge-item">
+    <svg viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+    </svg>
+    <span>Garansi 100 Hari</span>
+  </span>
+  <span class="exp-trust-dot" aria-hidden="true">&bull;</span>
+  <span class="exp-trust-badge-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+    <span>Checkout Aman</span>
+  </span>
+  <span class="exp-trust-dot" aria-hidden="true">&bull;</span>
+  <span class="exp-trust-badge-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="1" y="3" width="15" height="13"></rect>
+      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+      <circle cx="5.5" cy="18.5" r="2.5"></circle>
+      <circle cx="18.5" cy="18.5" r="2.5"></circle>
+    </svg>
+    <span>Bebas Ongkir</span>
+  </span>
+</div>

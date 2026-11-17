@@ -1,0 +1,58 @@
+{% comment %}
+  Renders the "Sempurna Dipadukan Dengan" cross-sell recommendation card.
+  Accepts:
+  - block: {Object} Block object with settings
+  - product: {Object} Product Liquid object
+{% endcomment %}
+
+{%- liquid
+  assign heading = block.settings.heading | default: 'Sempurna Dipadukan Dengan'
+  assign cross_product = block.settings.product
+  assign custom_title = block.settings.title | default: 'The Perfect Pot (5.2L)'
+  assign custom_desc = block.settings.desc | default: 'Panci kuah keluarga serbaguna'
+  assign custom_price = block.settings.price | default: 'Rp 2.250.000'
+  assign cross_variant_id = cross_product.selected_or_first_available_variant.id
+-%}
+
+<div class="exp-cross-sell-section" {{ block.shopify_attributes }}>
+  <h3 class="exp-cross-sell-heading">{{ heading }}</h3>
+  <div class="exp-cross-sell-card">
+    <div class="exp-cross-sell-left">
+      {%- if cross_product != blank and cross_product.featured_image != blank -%}
+        <img
+          src="{{ cross_product.featured_image | image_url: width: 120 }}"
+          alt="{{ cross_product.title | escape }}"
+          class="exp-cross-sell-img"
+          width="58"
+          height="58"
+          loading="lazy"
+        >
+      {%- else -%}
+        <div class="exp-cross-sell-img" style="display:flex;align-items:center;justify-content:center;background:#f3f4f6;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
+            <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+          </svg>
+        </div>
+      {%- endif -%}
+
+      <div class="exp-cross-sell-info">
+        <h4 class="exp-cross-sell-title">
+          {%- if cross_product != blank -%}{{ cross_product.title }}{%- else -%}{{ custom_title }}{%- endif -%}
+        </h4>
+        <p class="exp-cross-sell-desc">{{ custom_desc }}</p>
+        <p class="exp-cross-sell-price">
+          {%- if cross_product != blank -%}{{ cross_product.price | money }}{%- else -%}{{ custom_price }}{%- endif -%}
+        </p>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="exp-cross-sell-btn"
+      data-variant-id="{{ cross_variant_id }}"
+      aria-label="Add {{ custom_title }} to cart"
+    >
+      + Tambah
+    </button>
+  </div>
+</div>

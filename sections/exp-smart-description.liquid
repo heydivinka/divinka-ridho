@@ -1,0 +1,277 @@
+{{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+{{ 'exp-pdp-custom.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .exp-smart-description-section {
+    max-width: {{ section.settings.container_width }}px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+  <div class="page-width">
+    <div class="exp-smart-description-section">
+      {% render 'exp-smart-description', product: product, section: section %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "EXP Smart Description",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Skema Warna",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 600,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "label": "Lebar Maksimum Kontainer",
+      "default": 960
+    },
+    {
+      "type": "header",
+      "content": "1. Termasuk Dalam Pembelian (What's Included)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_included_items",
+      "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "included_title",
+      "label": "Judul Box",
+      "default": "TERMASUK DALAM PEMBELIAN:"
+    },
+    {
+      "type": "text",
+      "id": "item_1",
+      "label": "Item 1",
+      "default": "Tutup Wajan Modular"
+    },
+    {
+      "type": "text",
+      "id": "item_2",
+      "label": "Item 2",
+      "default": "Spatula Kayu Beechwood"
+    },
+    {
+      "type": "text",
+      "id": "item_3",
+      "label": "Item 3",
+      "default": "Keranjang Steamer Stainless"
+    },
+    {
+      "type": "text",
+      "id": "item_4",
+      "label": "Item 4",
+      "default": "Spons Pembersih Khusus"
+    },
+    {
+      "type": "text",
+      "id": "item_5",
+      "label": "Item 5"
+    },
+    {
+      "type": "text",
+      "id": "item_6",
+      "label": "Item 6"
+    },
+    {
+      "type": "header",
+      "content": "2. Komentar Pembeli Terverifikasi"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_testimonial",
+      "label": "Tampilkan Komentar Pembeli Terverifikasi",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "testimonial_initials",
+      "label": "Inisial Avatar",
+      "default": "AS"
+    },
+    {
+      "type": "text",
+      "id": "testimonial_author",
+      "label": "Nama Pembeli",
+      "default": "Amanda S."
+    },
+    {
+      "type": "text",
+      "id": "testimonial_badge",
+      "label": "Teks Badge Verifikasi",
+      "default": "Pembeli Terverifikasi"
+    },
+    {
+      "type": "textarea",
+      "id": "testimonial_quote",
+      "label": "Kutipan Ulasan",
+      "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
+    },
+    {
+      "type": "header",
+      "content": "3. Smart Description Accordions"
+    },
+    {
+      "type": "paragraph",
+      "content": "Tab 1 otomatis mengambil isi dari Deskripsi Produk (product.description) di Shopify Admin."
+    },
+    {
+      "type": "text",
+      "id": "tab_1_title",
+      "label": "Judul Tab 1",
+      "default": "Deskripsi & Keunggulan (10-in-1)"
+    },
+    {
+      "type": "checkbox",
+      "id": "tab_1_use_product_description",
+      "label": "Ambil Otomatis Dari Product Description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "tab_1_open_by_default",
+      "label": "Tab 1 Langsung Terbuka (Default Open)",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "tab_1_content",
+      "label": "Konten Kustom Tab 1 (Fallback jika deskripsi kosong)"
+    },
+    {
+      "type": "text",
+      "id": "tab_2_title",
+      "label": "Judul Tab 2",
+      "default": "Spesifikasi & Material Non-Toxic"
+    },
+    {
+      "type": "richtext",
+      "id": "tab_2_content",
+      "label": "Konten Tab 2"
+    },
+    {
+      "type": "text",
+      "id": "tab_3_title",
+      "label": "Judul Tab 3",
+      "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
+    },
+    {
+      "type": "richtext",
+      "id": "tab_3_content",
+      "label": "Konten Tab 3"
+    },
+    {
+      "type": "header",
+      "content": "Pengaturan Spacing Section"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Atas",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bawah",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "accordion_tab",
+      "name": "Tab Accordion Tambahan",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ikon",
+          "options": [
+            {
+              "value": "cookware",
+              "label": "Panci / Tas (Deskripsi)"
+            },
+            {
+              "value": "shield",
+              "label": "Perisai (Spesifikasi & Material)"
+            },
+            {
+              "value": "clock",
+              "label": "Jam (Garansi & Uji Coba)"
+            }
+          ],
+          "default": "cookware"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Judul Tab",
+          "default": "Informasi Tambahan"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_product_description",
+          "label": "Ambil Dari Product Description",
+          "default": false
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Konten Tab"
+        },
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Atau Pilih Halaman"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "EXP Smart Description",
+      "blocks": []
+    }
+  ]
+}
+{% endschema %}

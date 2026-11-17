@@ -1,0 +1,88 @@
+{% comment %}
+  Renders the custom Size Cards variant picker.
+  Accepts:
+  - product: {Object} Product Liquid object
+  - block: {Object} Block object with settings
+  - option: {Object} Option object if inside variant-selects loop
+{% endcomment %}
+
+{%- liquid
+  assign selected_size = 'STANDAR 28 CM'
+  if option != blank
+    assign selected_size = option.selected_value | upcase
+  endif
+-%}
+
+<div class="exp-size-section" {{ block.shopify_attributes }}>
+  <div class="exp-size-label-row">
+    <span class="exp-size-label">
+      Pilihan Ukuran: <span class="exp-size-selected-name">{{ selected_size }}</span>
+    </span>
+    <span class="exp-stock-badge">Ready Stock</span>
+  </div>
+
+  <div class="exp-size-cards-grid">
+    {%- if option != blank -%}
+      {%- for value in option.values -%}
+        {%- assign val_lower = value | downcase -%}
+        <label class="exp-size-card">
+          <input
+            type="radio"
+            name="{{ option.name | escape }}"
+            value="{{ value | escape }}"
+            form="product-form-{{ section.id }}"
+            data-option-value-id="{{ value.id }}"
+            {% if option.selected_value == value %}checked{% endif %}
+          >
+          <div class="exp-size-card__box">
+            <span class="exp-size-card__title">{{ value }}</span>
+            {%- liquid
+              assign subtitle_text = ''
+              if val_lower contains 'mini' or val_lower contains '21'
+                assign subtitle_text = '1–2 Porsi'
+              elsif val_lower contains 'standar' or val_lower contains '28'
+                assign subtitle_text = '3–4 Porsi'
+              elsif val_lower contains 'family' or val_lower contains '32'
+                assign subtitle_text = '5–7 Porsi'
+              elsif val_lower contains 'porsi'
+                assign subtitle_text = value
+              endif
+            -%}
+            {%- if subtitle_text != blank -%}
+              <span class="exp-size-card__subtitle">{{ subtitle_text }}</span>
+            {%- endif -%}
+            {%- if val_lower contains 'standar' or val_lower contains '28' or val_lower contains 'favorit' -%}
+              <span class="exp-size-card__tag">(Favorit)</span>
+            {%- endif -%}
+          </div>
+        </label>
+      {%- endfor -%}
+    {%- else -%}
+      <!-- Default mockup size cards -->
+      <label class="exp-size-card">
+        <input type="radio" name="size-mockup" value="Mini 21cm">
+        <div class="exp-size-card__box">
+          <span class="exp-size-card__title">Mini 21cm</span>
+          <span class="exp-size-card__subtitle">1–2 Porsi</span>
+        </div>
+      </label>
+
+      <label class="exp-size-card">
+        <input type="radio" name="size-mockup" value="Standar 28cm" checked>
+        <div class="exp-size-card__box">
+          <span class="exp-size-card__title">Standar 28cm</span>
+          <span class="exp-size-card__subtitle">3–4 Porsi</span>
+          <span class="exp-size-card__tag">(Favorit)</span>
+        </div>
+      </label>
+
+      <label class="exp-size-card">
+        <input type="radio" name="size-mockup" value="Family 32cm">
+        <div class="exp-size-card__box">
+          <span class="exp-size-card__title">Family 32cm</span>
+          <span class="exp-size-card__subtitle">5–7 Porsi</span>
+        </div>
+      </label>
+    {%- endif -%}
+  </div>
+</div>

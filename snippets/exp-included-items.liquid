@@ -1,0 +1,62 @@
+{% comment %}
+  Renders the "Termasuk Dalam Pembelian" (What's Included) 2-column checklist box.
+  Accepts:
+  - block: {Object} Block object with settings
+{% endcomment %}
+
+{%- liquid
+  assign title = block.settings.title | default: 'TERMASUK DALAM PEMBELIAN:'
+  assign item_1 = block.settings.item_1 | default: 'Tutup Wajan Modular'
+  assign item_2 = block.settings.item_2 | default: 'Spatula Kayu Beechwood'
+  assign item_3 = block.settings.item_3 | default: 'Keranjang Steamer Stainless'
+  assign item_4 = block.settings.item_4 | default: 'Spons Pembersih Khusus'
+  assign item_5 = block.settings.item_5
+  assign item_6 = block.settings.item_6
+-%}
+
+<div class="exp-included-box" {{ block.shopify_attributes }}>
+  <div class="exp-included-box__title">{{ title }}</div>
+  <div class="exp-included-box__grid">
+    {%- if item_1 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_1 }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if item_2 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_2 }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if item_3 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_3 }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if item_4 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_4 }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if item_5 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_5 }}</span>
+      </div>
+    {%- endif -%}
+
+    {%- if item_6 != blank -%}
+      <div class="exp-included-item">
+        <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+        <span class="exp-included-item__text">{{ item_6 }}</span>
+      </div>
+    {%- endif -%}
+  </div>
+</div>

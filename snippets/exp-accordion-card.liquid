@@ -1,0 +1,64 @@
+{% comment %}
+  Renders an individual custom accordion card.
+  Accepts:
+  - block: {Object} Block object with settings
+{% endcomment %}
+
+{%- liquid
+  assign title = block.settings.heading | default: 'Deskripsi & Keunggulan (10-in-1)'
+  assign content = block.settings.content
+  assign page_content = block.settings.page.content
+  assign icon_type = block.settings.icon | default: 'cookware'
+-%}
+
+<details class="exp-accordion-item" {{ block.shopify_attributes }}>
+  <summary class="exp-accordion-header">
+    <div class="exp-accordion-header__left">
+      <span class="exp-accordion-icon">
+        {%- case icon_type -%}
+          {%- when 'shield' -%}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          {%- when 'clock' -%}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          {%- else -%}
+            <!-- cookware / bag -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+        {%- endcase -%}
+      </span>
+      <span class="exp-accordion-title">{{ title }}</span>
+    </div>
+    <span class="exp-accordion-chevron" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </span>
+  </summary>
+  <div class="exp-accordion-body rte">
+    {%- if content != blank -%}
+      {{ content }}
+    {%- elsif page_content != blank -%}
+      {{ page_content }}
+    {%- else -%}
+      {%- case icon_type -%}
+        {%- when 'shield' -%}
+          <p><strong>Material:</strong> Aluminium die-cast kualitas tinggi dengan konduksi panas merata.</p>
+          <p><strong>Lapisan Non-Stick:</strong> Bebas PTFE, PFOA, Timbal, Cadmium, dan bahan kimia berbahaya lainnya (100% Non-Toxic).</p>
+          <p><strong>Kelengkapan:</strong> Spatula kayu beechwood alami tahan panas & keranjang kukusan stainless steel 304 food-grade.</p>
+        {%- when 'clock' -%}
+          <p>Nikmati uji coba produk selama 100 hari di dapur Anda. Jika Anda tidak sepenuhnya puas dengan kualitasnya, kami memberikan garansi pengembalian dana 100% tanpa ribet.</p>
+        {%- else -%}
+          <p>Wajan inovatif pengganti 10 peralatan masak tradisional Anda: menumis, menggoreng, merebus, mengukus, memanggang, menyajikan, hingga menyimpan makanan dengan tutup modular yang pas dan corong tuang anti-tumpah.</p>
+      {%- endcase -%}
+    {%- endif -%}
+  </div>
+</details>

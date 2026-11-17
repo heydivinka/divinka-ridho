@@ -1,0 +1,326 @@
+{% comment %}
+  Renders the EXP Smart Description unified component:
+  1. Top: Termasuk Dalam Pembelian (What's Included) checklist (toggleable)
+  2. Middle: Komentar Pembeli Terverifikasi (Verified Customer Review) card (toggleable)
+  3. Bottom: Smart Description Accordions:
+     - Tab 1: Deskripsi & Keunggulan (ngambil cerita/fitur dari product.description)
+     - Tab 2: Spesifikasi & Material Non-Toxic (ngambil ukuran/berat/bahan dari product.description)
+     - Tab 3: Garansi Uji Coba 100 Hari Bebas Risiko (ngambil garansi/kebijakan dari product.description atau setting)
+
+  Accepts:
+  - product: {Object} Product Liquid object
+  - block: {Object} Optional Block object (if used as block inside main-product)
+  - section: {Object} Optional Section object (if used inside exp-smart-description section)
+{% endcomment %}
+
+{%- liquid
+  assign source = block.settings | default: section.settings
+
+  # 1. Included Items settings
+  assign show_included = source.show_included_items
+  if show_included == nil
+    assign show_included = true
+  endif
+  assign included_title = source.included_title | default: 'TERMASUK DALAM PEMBELIAN:'
+  assign item_1 = source.item_1 | default: 'Tutup Wajan Modular'
+  assign item_2 = source.item_2 | default: 'Spatula Kayu Beechwood'
+  assign item_3 = source.item_3 | default: 'Keranjang Steamer Stainless'
+  assign item_4 = source.item_4 | default: 'Spons Pembersih Khusus'
+  assign item_5 = source.item_5
+  assign item_6 = source.item_6
+
+  # 2. Testimonial settings
+  assign show_testimonial = source.show_testimonial
+  if show_testimonial == nil
+    assign show_testimonial = true
+  endif
+  assign initials = source.testimonial_initials | default: 'AS'
+  assign author = source.testimonial_author | default: 'Amanda S.'
+  assign badge = source.testimonial_badge | default: 'Pembeli Terverifikasi'
+  assign quote = source.testimonial_quote | default: '“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”'
+
+  # 3. Smart Description Accordion settings
+  assign tab_1_title = source.tab_1_title | default: 'Deskripsi & Keunggulan (10-in-1)'
+  assign tab_1_use_product_description = source.tab_1_use_product_description
+  if tab_1_use_product_description == nil
+    assign tab_1_use_product_description = true
+  endif
+  assign tab_1_content = source.tab_1_content
+  assign tab_1_open = source.tab_1_open_by_default
+  if tab_1_open == nil
+    assign tab_1_open = true
+  endif
+
+  assign tab_2_title = source.tab_2_title | default: 'Spesifikasi & Material Non-Toxic'
+  assign tab_2_content = source.tab_2_content
+
+  assign tab_3_title = source.tab_3_title | default: 'Garansi Uji Coba 100 Hari Bebas Risiko'
+  assign tab_3_content = source.tab_3_content
+
+  # --- SMART DESCRIPTION LIQUID PARSER ---
+  # Memproses product.description agar terbagi secara pintar ke masing-masing tab accordion
+  assign smart_tab_1 = ''
+  assign smart_tab_2 = ''
+  assign smart_tab_3 = ''
+
+  if product.description != blank
+    if product.description contains '<!-- split -->'
+      assign parts = product.description | split: '<!-- split -->'
+      assign smart_tab_1 = parts[0] | strip
+      if parts.size > 1
+        assign smart_tab_2 = parts[1] | strip
+      endif
+      if parts.size > 2
+        assign smart_tab_3 = parts[2] | strip
+      endif
+    else
+      # Parsing berbasis paragraf & blok HTML
+      assign paragraphs = product.description | split: '</p>'
+      for p in paragraphs
+        assign p_str = p | strip
+        if p_str != blank
+          assign p_full = p_str | append: '</p>'
+          assign p_lower = p_full | downcase
+
+          # Filter out disclaimer toko demo bawaan agar tidak mengotori deskripsi
+          unless p_lower contains 'this is a demonstration store'
+            if p_lower contains 'garansi' or p_lower contains 'warranty' or p_lower contains 'bebas risiko' or p_lower contains '100 hari' or p_lower contains 'jaminan' or p_lower contains 'return policy'
+              assign smart_tab_3 = smart_tab_3 | append: p_full
+            elsif p_lower contains 'oz' or p_lower contains '(454g)' or p_lower contains '(468g)' or p_lower contains 'pack size' or p_lower contains 'spesifikasi' or p_lower contains 'material' or p_lower contains 'dimensi' or p_lower contains 'ukuran' or p_lower contains 'berat' or p_lower contains 'komposisi' or p_lower contains 'ingredients:' or p_lower contains 'non-toxic' or p_lower contains 'diameter' or p_lower contains 'kapasitas' or p_lower contains 'die-cast'
+              assign smart_tab_2 = smart_tab_2 | append: p_full
+            else
+              assign smart_tab_1 = smart_tab_1 | append: p_full
+            endif
+          endunless
+        endif
+      endfor
+    endif
+  endif
+
+  # Resolusi Konten Tab 1 (Deskripsi & Keunggulan)
+  assign final_tab_1_content = ''
+  if tab_1_use_product_description and smart_tab_1 != blank
+    assign final_tab_1_content = smart_tab_1
+  elsif tab_1_content != blank
+    assign final_tab_1_content = tab_1_content
+  elsif product.description != blank
+    assign final_tab_1_content = product.description
+  else
+    assign final_tab_1_content = '<p>Wajan inovatif pengganti 10 peralatan masak tradisional Anda: menumis, menggoreng, merebus, mengukus, memanggang, menyajikan, hingga menyimpan makanan dengan tutup modular yang pas dan corong tuang anti-tumpah.</p>'
+  endif
+
+  # Resolusi Konten Tab 2 (Spesifikasi & Material Non-Toxic)
+  assign final_tab_2_content = ''
+  if smart_tab_2 != blank
+    assign final_tab_2_content = smart_tab_2
+  elsif tab_2_content != blank
+    assign final_tab_2_content = tab_2_content
+  else
+    assign final_tab_2_content = '<p><strong>Material:</strong> Aluminium die-cast kualitas tinggi dengan konduksi panas merata.</p><p><strong>Lapisan Non-Stick:</strong> Bebas PTFE, PFOA, Timbal, Cadmium, dan bahan kimia berbahaya lainnya (100% Non-Toxic Keramik).</p><p><strong>Kelengkapan:</strong> Spatula kayu beechwood alami tahan panas & keranjang kukusan stainless steel 304 food-grade.</p>'
+  endif
+
+  # Resolusi Konten Tab 3 (Garansi Uji Coba 100 Hari Bebas Risiko)
+  assign final_tab_3_content = ''
+  if smart_tab_3 != blank
+    assign final_tab_3_content = smart_tab_3
+  elsif tab_3_content != blank
+    assign final_tab_3_content = tab_3_content
+  else
+    assign final_tab_3_content = '<p>Nikmati uji coba produk selama 100 hari di dapur Anda. Jika Anda tidak sepenuhnya puas dengan kualitasnya, kami memberikan garansi pengembalian dana 100% tanpa ribet.</p>'
+  endif
+-%}
+
+<div class="exp-smart-description" {% if block %} {{ block.shopify_attributes }} {% endif %} data-raw-description="{{ product.description | escape }}">
+  {%- comment -%} 1. BAGIAN ATAS: TERMASUK DALAM PEMBELIAN {%- endcomment -%}
+  {%- if show_included -%}
+    <div class="exp-included-box">
+      <div class="exp-included-box__title">{{ included_title }}</div>
+      <div class="exp-included-box__grid">
+        {%- if item_1 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_1 }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if item_2 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_2 }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if item_3 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_3 }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if item_4 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_4 }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if item_5 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_5 }}</span>
+          </div>
+        {%- endif -%}
+
+        {%- if item_6 != blank -%}
+          <div class="exp-included-item">
+            <span class="exp-included-item__check" aria-hidden="true">&#10003;</span>
+            <span class="exp-included-item__text">{{ item_6 }}</span>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} 2. BAGIAN TENGAH: KOMENTAR PEMBELI TERVERIFIKASI {%- endcomment -%}
+  {%- if show_testimonial -%}
+    <div class="exp-testimonial-card">
+      <div class="exp-testimonial-header">
+        <div class="exp-testimonial-avatar">{{ initials }}</div>
+        <div class="exp-testimonial-meta">
+          <div class="exp-testimonial-stars-row">
+            <span class="exp-stars" aria-label="5 out of 5 stars">
+              {%- for i in (1..5) -%}
+                <svg viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              {%- endfor -%}
+            </span>
+            <span class="exp-testimonial-author">{{ author }}</span>
+            <span class="exp-testimonial-badge">{{ badge }}</span>
+          </div>
+        </div>
+      </div>
+      <p class="exp-testimonial-quote">{{ quote }}</p>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} 3. BAGIAN BAWAH: SMART DESCRIPTION ACCORDIONS {%- endcomment -%}
+  <div class="exp-accordions-group">
+    {%- comment -%} Tab 1: Deskripsi & Keunggulan (ngambil cerita/fitur dari product.description) {%- endcomment -%}
+    <details class="exp-accordion-item" {% if tab_1_open %}open{% endif %}>
+      <summary class="exp-accordion-header">
+        <div class="exp-accordion-header__left">
+          <span class="exp-accordion-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 11h16a1 1 0 0 1 1 1v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-6a1 1 0 0 1 1-1z"></path>
+              <path d="M9 11V8a3 3 0 0 1 6 0v3"></path>
+              <line x1="2" y1="13" x2="4" y2="13"></line>
+              <line x1="20" y1="13" x2="22" y2="13"></line>
+            </svg>
+          </span>
+          <span class="exp-accordion-title">{{ tab_1_title }}</span>
+        </div>
+        <span class="exp-accordion-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </summary>
+      <div class="exp-accordion-body rte" data-tab-type="desc">
+        {{ final_tab_1_content }}
+      </div>
+    </details>
+
+    {%- comment -%} Tab 2: Spesifikasi & Material Non-Toxic (ngambil ukuran/spesifikasi dari product.description) {%- endcomment -%}
+    <details class="exp-accordion-item">
+      <summary class="exp-accordion-header">
+        <div class="exp-accordion-header__left">
+          <span class="exp-accordion-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </span>
+          <span class="exp-accordion-title">{{ tab_2_title }}</span>
+        </div>
+        <span class="exp-accordion-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </summary>
+      <div class="exp-accordion-body rte" data-tab-type="specs">
+        {{ final_tab_2_content }}
+      </div>
+    </details>
+
+    {%- comment -%} Tab 3: Garansi Uji Coba 100 Hari Bebas Risiko {%- endcomment -%}
+    <details class="exp-accordion-item">
+      <summary class="exp-accordion-header">
+        <div class="exp-accordion-header__left">
+          <span class="exp-accordion-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </span>
+          <span class="exp-accordion-title">{{ tab_3_title }}</span>
+        </div>
+        <span class="exp-accordion-chevron" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </span>
+      </summary>
+      <div class="exp-accordion-body rte" data-tab-type="warranty">
+        {{ final_tab_3_content }}
+      </div>
+    </details>
+
+    {%- comment -%} Jika ada additional blocks dinamis pada section {%- endcomment -%}
+    {%- if section.blocks.size > 0 -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'accordion_tab' -%}
+          <details class="exp-accordion-item" {{ block.shopify_attributes }}>
+            <summary class="exp-accordion-header">
+              <div class="exp-accordion-header__left">
+                <span class="exp-accordion-icon">
+                  {%- case block.settings.icon -%}
+                    {%- when 'shield' -%}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                      </svg>
+                    {%- when 'clock' -%}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                    {%- else -%}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 11h16a1 1 0 0 1 1 1v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-6a1 1 0 0 1 1-1z"></path>
+                        <path d="M9 11V8a3 3 0 0 1 6 0v3"></path>
+                      </svg>
+                  {%- endcase -%}
+                </span>
+                <span class="exp-accordion-title">{{ block.settings.heading | escape }}</span>
+              </div>
+              <span class="exp-accordion-chevron" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </summary>
+            <div class="exp-accordion-body rte">
+              {%- if block.settings.content != blank -%}
+                {{ block.settings.content }}
+              {%- elsif block.settings.page != blank -%}
+                {{ block.settings.page.content }}
+              {%- endif -%}
+            </div>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  </div>
+</div>

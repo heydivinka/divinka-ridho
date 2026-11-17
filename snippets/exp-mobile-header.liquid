@@ -1,0 +1,51 @@
+{% comment %}
+  Renders the custom mobile top bar for the Product Detail Page (PDP).
+  Accepts:
+  - product: {Object} Product Liquid object
+  - show_back: {Boolean} Whether to show back arrow
+  - title: {String} Brand/Logo title (defaults to shop.name or "Lorem Ipsum")
+{% endcomment %}
+
+<div class="exp-mobile-header" id="exp-mobile-header-{{ section.id }}">
+  <div class="exp-mobile-header__left">
+    <a href="javascript:history.back()" class="exp-mobile-header__btn" aria-label="Go back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </a>
+  </div>
+
+  <div class="exp-mobile-header__center">
+    <a href="{{ routes.root_url }}" class="exp-mobile-header__title">
+      {{- shop.name | default: 'Lorem Ipsum' -}}
+    </a>
+  </div>
+
+  <div class="exp-mobile-header__right">
+    <button
+      type="button"
+      class="exp-mobile-header__btn exp-mobile-header__wishlist"
+      data-product-id="{{ product.id | default: 'always-pan' }}"
+      aria-label="Add to wishlist"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </button>
+
+    <a href="{{ routes.cart_url }}" class="exp-mobile-header__btn" aria-label="Cart">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <path d="M16 10a4 4 0 0 1-8 0"></path>
+      </svg>
+      <span class="exp-mobile-header__cart-badge">
+        {%- if cart.item_count > 0 -%}
+          {{ cart.item_count }}
+        {%- else -%}
+          2
+        {%- endif -%}
+      </span>
+    </a>
+  </div>
+</div>

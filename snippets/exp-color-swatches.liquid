@@ -1,0 +1,64 @@
+{% comment %}
+  Renders the custom Color Swatches variant picker.
+  Accepts:
+  - product: {Object} Product Liquid object
+  - block: {Object} Block object with settings
+  - option: {Object} Option object if inside variant-selects loop
+{% endcomment %}
+
+{%- liquid
+  assign selected_color = 'SPICE (TERRACOTTA)'
+  if option != blank
+    assign selected_color = option.selected_value | upcase
+  endif
+-%}
+
+<div class="exp-color-section" {{ block.shopify_attributes }}>
+  <div class="exp-color-label-row">
+    <span class="exp-color-label">
+      Pilihan Warna: <span class="exp-color-selected-name">{{ selected_color }}</span>
+    </span>
+    <span class="exp-color-tag">— TERLARIS</span>
+  </div>
+
+  <div class="exp-swatches-grid">
+    {%- if option != blank -%}
+      {%- for value in option.values -%}
+        {%- assign val_lower = value | downcase -%}
+        <label class="exp-swatch-item" title="{{ value | escape }}">
+          <input
+            type="radio"
+            name="{{ option.name | escape }}"
+            value="{{ value | escape }}"
+            form="product-form-{{ section.id }}"
+            data-option-value-id="{{ value.id }}"
+            {% if option.selected_value == value %}checked{% endif %}
+          >
+          <span class="exp-swatch-circle" data-color="{{ val_lower }}" aria-hidden="true"></span>
+        </label>
+      {%- endfor -%}
+    {%- else -%}
+      <!-- Default mockup colors -->
+      <label class="exp-swatch-item" title="Spice (Terracotta)">
+        <input type="radio" name="color-mockup" value="Spice (Terracotta)" checked>
+        <span class="exp-swatch-circle" data-color="spice" style="background-color: #c85a38;"></span>
+      </label>
+      <label class="exp-swatch-item" title="Steam (Oat)">
+        <input type="radio" name="color-mockup" value="Steam (Oat)">
+        <span class="exp-swatch-circle" data-color="steam" style="background-color: #e8e1d5;"></span>
+      </label>
+      <label class="exp-swatch-item" title="Charcoal (Black)">
+        <input type="radio" name="color-mockup" value="Charcoal (Black)">
+        <span class="exp-swatch-circle" data-color="charcoal" style="background-color: #2d3134;"></span>
+      </label>
+      <label class="exp-swatch-item" title="Sage (Green)">
+        <input type="radio" name="color-mockup" value="Sage (Green)">
+        <span class="exp-swatch-circle" data-color="sage" style="background-color: #8f9c84;"></span>
+      </label>
+      <label class="exp-swatch-item" title="Lavender (Lilac)">
+        <input type="radio" name="color-mockup" value="Lavender (Lilac)">
+        <span class="exp-swatch-circle" data-color="lavender" style="background-color: #b5a8c2;"></span>
+      </label>
+    {%- endif -%}
+  </div>
+</div>
