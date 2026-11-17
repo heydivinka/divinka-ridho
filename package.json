@@ -1,0 +1,24 @@
+{
+  "name": "theme_export__ridho-playground-myshopify-com-dawn__17nov2026-0229am",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "shopify theme dev --store ridho-playground.myshopify.com",
+    "pull": "shopify theme pull --store ridho-playground.myshopify.com",
+    "push": "shopify theme push --store ridho-playground.myshopify.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heydivinka/theme_export__ridho-playground-myshopify-com-dawn__17NOV2026-0229am.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/heydivinka/theme_export__ridho-playground-myshopify-com-dawn__17NOV2026-0229am/issues"
+  },
+  "homepage": "https://github.com/heydivinka/theme_export__ridho-playground-myshopify-com-dawn__17NOV2026-0229am#readme"
+}
