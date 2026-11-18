@@ -1,6 +1,7 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 {{ 'component-price.css' | asset_url | stylesheet_tag }}
 {{ 'section-related-products.css' | asset_url | stylesheet_tag }}
+{{ 'exp-pdp-custom.css' | asset_url | stylesheet_tag }}
 
 {% if section.settings.image_shape == 'blob' %}
   {{ 'mask-blobs.css' | asset_url | stylesheet_tag }}
@@ -20,36 +21,42 @@
   }
 {%- endstyle -%}
 
-<div class="color-{{ section.settings.color_scheme }} gradient">
+<div class="exp-related-section color-{{ section.settings.color_scheme }} gradient">
   <product-recommendations
-    class="related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    class="related-products exp-related-products page-width section-{{ section.id }}-padding isolate{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}"
     data-section-id="{{ section.id }}"
     data-product-id="{{ product.id }}"
   >
     {% if recommendations.performed and recommendations.products_count > 0 %}
-      <h2 class="related-products__heading inline-richtext {{ section.settings.heading_size }}">
-        {{ section.settings.heading }}
-      </h2>
+      <div class="exp-related-header">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="exp-related-eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        <h2 class="related-products__heading exp-related-heading inline-richtext {{ section.settings.heading_size }}">
+          {{ section.settings.heading }}
+        </h2>
+        {%- if section.settings.subtitle != blank -%}
+          <p class="exp-related-subtitle">{{ section.settings.subtitle | escape }}</p>
+        {%- endif -%}
+      </div>
+
       <ul
-        class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+        class="exp-related-grid exp-related-grid--desktop-{{ section.settings.columns_desktop }} exp-related-grid--mobile-{{ section.settings.columns_mobile }} list-unstyled"
         role="list"
       >
-        {% assign skip_card_product_styles = false %}
         {% for recommendation in recommendations.products %}
-          <li class="grid__item">
-            {% render 'card-product',
+          <li class="exp-related-grid__item">
+            {% render 'exp-related-card',
               card_product: recommendation,
               media_aspect_ratio: section.settings.image_ratio,
-              image_shape: section.settings.image_shape,
               show_secondary_image: section.settings.show_secondary_image,
               show_vendor: section.settings.show_vendor,
               show_rating: section.settings.show_rating,
-              skip_styles: skip_card_product_styles,
-              product_view_context: 'recommendation'
+              show_quick_add: section.settings.show_quick_add,
+              quick_add_label: section.settings.quick_add_label
             %}
           </li>
-          {%- assign skip_card_product_styles = true -%}
         {% endfor %}
       </ul>
     {% endif %}
@@ -70,10 +77,22 @@
       "content": "t:sections.related-products.settings.paragraph__1.content"
     },
     {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Label Eyebrow (Atas Judul)",
+      "default": "REKOMENDASI PILIHAN"
+    },
+    {
       "type": "inline_richtext",
       "id": "heading",
       "default": "t:sections.related-products.settings.paragraph__1.default",
       "label": "t:sections.related-products.settings.heading.label"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subjudul Singkat",
+      "default": "Lengkapi pengalaman belanja Anda dengan pasangan produk terbaiknya."
     },
     {
       "type": "select",
@@ -100,7 +119,7 @@
           "label": "t:sections.all.heading_size.options__5.label"
         }
       ],
-      "default": "h1",
+      "default": "h2",
       "label": "t:sections.all.heading_size.label"
     },
     {
@@ -135,7 +154,7 @@
           "value": "2",
           "label": "t:sections.related-products.settings.columns_mobile.options__2.label"
         }
-      ]    
+      ]
     },
     {
       "type": "color_scheme",
@@ -165,7 +184,7 @@
           "label": "t:sections.related-products.settings.image_ratio.options__3.label"
         }
       ],
-      "default": "adapt",
+      "default": "square",
       "label": "t:sections.related-products.settings.image_ratio.label"
     },
     {
@@ -211,7 +230,7 @@
     {
       "type": "checkbox",
       "id": "show_secondary_image",
-      "default": false,
+      "default": true,
       "label": "t:sections.related-products.settings.show_secondary_image.label"
     },
     {
@@ -226,6 +245,18 @@
       "default": false,
       "label": "t:sections.related-products.settings.show_rating.label",
       "info": "t:sections.related-products.settings.show_rating.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_add",
+      "default": true,
+      "label": "Tampilkan Tombol Add to Cart"
+    },
+    {
+      "type": "text",
+      "id": "quick_add_label",
+      "default": "Tambah",
+      "label": "Label Tombol Add to Cart"
     },
     {
       "type": "header",

@@ -1,0 +1,182 @@
+{% comment %}
+  Renders a standardized EXP Cross-Sell / Related Product Card matching the Main Product design system
+  and mobile horizontal cross-sell layout with live AJAX Add to Cart action.
+
+  Accepts:
+  - card_product: {Object} Product Liquid object
+  - media_aspect_ratio: {String} 'square' | 'portrait' | 'adapt'
+  - show_secondary_image: {Boolean}
+  - show_vendor: {Boolean}
+  - show_rating: {Boolean}
+  - show_quick_add: {Boolean}
+  - quick_add_label: {String}
+{% endcomment %}
+
+{%- if card_product and card_product != empty -%}
+  {%- liquid
+    assign current_variant = card_product.selected_or_first_available_variant
+    assign price = current_variant.price | default: card_product.price
+    assign compare_at = current_variant.compare_at_price | default: card_product.compare_at_price
+    assign on_sale = false
+    assign discount_percent = 0
+    if compare_at != blank and price != blank and compare_at > price
+      assign on_sale = true
+      assign savings = compare_at | minus: price
+      assign discount_percent = savings | times: 100 | divided_by: compare_at
+    endif
+
+    assign featured_media = card_product.featured_media
+    assign secondary_media = null
+    if show_secondary_image and card_product.media[1] != null
+      assign secondary_media = card_product.media[1]
+    endif
+
+    assign ratio_class = 'exp-rel-card__media--square'
+    if media_aspect_ratio == 'portrait'
+      assign ratio_class = 'exp-rel-card__media--portrait'
+    elsif media_aspect_ratio == 'adapt' and featured_media != null
+      assign ratio_class = 'exp-rel-card__media--adapt'
+    endif
+
+    # Build clean 1-line product subtitle/excerpt (filters out demo store disclaimer)
+    assign excerpt_text = ''
+    if card_product.description != blank
+      assign desc_paras = card_product.description | replace: '</P>', '</p>' | split: '</p>'
+      for p in desc_paras
+        assign p_clean = p | append: '</p>' | strip_html | strip
+        assign p_lower = p_clean | downcase
+        if p_clean != blank and excerpt_text == blank
+          unless p_lower contains 'this is a demonstration store' or p_lower contains 'termasuk dalam pembelian' or p_lower contains 'deskripsi & keunggulan'
+            assign excerpt_text = p_clean | truncate: 48
+          endunless
+        endif
+      endfor
+    endif
+    if excerpt_text == blank and card_product.type != blank
+      assign excerpt_text = card_product.type
+    elsif excerpt_text == blank and card_product.vendor != blank
+      assign excerpt_text = card_product.vendor
+    endif
+
+    assign btn_label = quick_add_label | default: 'Tambah'
+    assign btn_label_clean = btn_label | remove_first: '+ ' | remove_first: '+' | strip
+    if btn_label_clean == blank
+      assign btn_label_clean = 'Tambah'
+    endif
+  -%}
+
+  <article class="exp-rel-card{% unless card_product.available %} exp-rel-card--soldout{% endunless %}">
+    <a
+      href="{{ card_product.url }}"
+      class="exp-rel-card__media {{ ratio_class }}"
+      {% if media_aspect_ratio == 'adapt' and featured_media != null %}
+        style="aspect-ratio: {{ featured_media.aspect_ratio }};"
+      {% endif %}
+      aria-label="{{ card_product.title | escape }}"
+    >
+      {%- if featured_media -%}
+        <img
+          src="{{ featured_media | image_url: width: 600 }}"
+          srcset="
+            {{ featured_media | image_url: width: 200 }} 200w,
+            {{ featured_media | image_url: width: 400 }} 400w,
+            {{ featured_media | image_url: width: 600 }} 600w
+          "
+          sizes="(min-width: 990px) 25vw, (min-width: 750px) 33vw, 80px"
+          alt="{{ featured_media.alt | default: card_product.title | escape }}"
+          class="exp-rel-card__img exp-rel-card__img--primary"
+          width="{{ featured_media.width }}"
+          height="{{ featured_media.height }}"
+          loading="lazy"
+        >
+        {%- if secondary_media -%}
+          <img
+            src="{{ secondary_media | image_url: width: 600 }}"
+            alt="{{ secondary_media.alt | default: card_product.title | escape }}"
+            class="exp-rel-card__img exp-rel-card__img--secondary"
+            width="{{ secondary_media.width }}"
+            height="{{ secondary_media.height }}"
+            loading="lazy"
+          >
+        {%- endif -%}
+      {%- else -%}
+        <div class="exp-rel-card__placeholder">
+          {{ 'product-apparel-2' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {%- endif -%}
+
+      <div class="exp-rel-card__badges">
+        {%- if card_product.available == false -%}
+          <span class="exp-rel-badge exp-rel-badge--soldout">Stok Habis</span>
+        {%- elsif on_sale and discount_percent > 0 -%}
+          <span class="exp-rel-badge exp-rel-badge--sale">HEMAT {{ discount_percent }}%</span>
+        {%- endif -%}
+      </div>
+    </a>
+
+    <div class="exp-rel-card__body">
+      <div class="exp-rel-card__info">
+        {%- if show_vendor and card_product.vendor != blank -%}
+          <span class="exp-rel-card__vendor">{{ card_product.vendor | escape }}</span>
+        {%- endif -%}
+
+        <h3 class="exp-rel-card__title">
+          <a href="{{ card_product.url }}" class="exp-rel-card__link">
+            {{ card_product.title | escape }}
+          </a>
+        </h3>
+
+        {%- if excerpt_text != blank -%}
+          <p class="exp-rel-card__excerpt">{{ excerpt_text | escape }}</p>
+        {%- endif -%}
+
+        {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
+          <div class="exp-rel-card__rating">
+            <span class="exp-stars" aria-hidden="true">
+              {%- for i in (1..5) -%}
+                <svg viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              {%- endfor -%}
+            </span>
+            <span class="exp-rel-card__rating-val">{{ card_product.metafields.reviews.rating.value.rating | round: 1 }}</span>
+          </div>
+        {%- endif -%}
+
+        <div class="exp-rel-card__price-row">
+          <span class="exp-rel-card__price">
+            {{ cart.currency.symbol | default: 'Rp' }} {{ price | money_without_currency | remove: ',00' }}
+          </span>
+          {%- if on_sale -%}
+            <s class="exp-rel-card__compare">
+              {{ cart.currency.symbol | default: 'Rp' }} {{ compare_at | money_without_currency | remove: ',00' }}
+            </s>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- if show_quick_add != false -%}
+        <div class="exp-rel-card__actions">
+          {%- if card_product.available == false or current_variant == nil -%}
+            <button type="button" class="exp-rel-btn exp-rel-btn--disabled" disabled>
+              Sold out
+            </button>
+          {%- else -%}
+            <button
+              type="button"
+              class="exp-rel-btn exp-related-quick-add"
+              data-variant-id="{{ current_variant.id }}"
+              aria-label="Tambahkan {{ card_product.title | escape }} ke keranjang"
+            >
+              <svg class="exp-rel-btn__icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span class="exp-rel-btn__text">{{ btn_label_clean | escape }}</span>
+            </button>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </article>
+{%- endif -%}
