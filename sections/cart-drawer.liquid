@@ -1,6 +1,6 @@
 {% comment %}
   Cart Drawer Section with Full Schema & Blocks Support
-  Renders the Modern Luxury Cart Drawer with dynamic block architecture
+  Renders the Modern Luxury Cart Drawer with dynamic block architecture.
 {% endcomment %}
 
 {%- if settings.cart_type == 'drawer' and section.settings.enable_drawer != false -%}
@@ -125,7 +125,7 @@
     },
     {
       "type": "upsell",
-      "name": "Cross-sell (Lengkapi Dapurmu)",
+      "name": "Cross-sell Upsell",
       "limit": 1,
       "settings": [
         {
@@ -167,7 +167,7 @@
     },
     {
       "type": "order_summary",
-      "name": "Rincian Pembayaran & Checkout",
+      "name": "Rincian Pembayaran",
       "limit": 1,
       "settings": [
         {
@@ -217,7 +217,7 @@
     },
     {
       "type": "empty_cart",
-      "name": "Pengaturan Keranjang Kosong",
+      "name": "Keranjang Kosong",
       "limit": 1,
       "settings": [
         {
