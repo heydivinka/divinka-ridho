@@ -81,7 +81,9 @@
   assign drawer_color_scheme = section.settings.color_scheme | default: settings.cart_color_scheme | default: 'scheme-1'
 
   assign enable_free_shipping = true
-  if has_blocks and shipping_bar_block == nil
+  if section.settings.enable_free_shipping == false
+    assign enable_free_shipping = false
+  elsif has_blocks and shipping_bar_block == nil
     assign enable_free_shipping = false
   elsif settings.enable_free_shipping_bar == false and has_blocks == false
     assign enable_free_shipping = false
@@ -143,7 +145,7 @@
         <div class="cd-shipping-bar__meta">
           <div class="cd-shipping-bar__meta-left">
             {%- if is_free_shipping -%}
-              <span>🎉 <strong>{{ shipping_bar_block.settings.celebration_text | default: 'Selamat! Kamu mendapatkan Bebas Ongkos Kirim!' }}</strong></span>
+              <span>🎉 <strong>{{ shipping_bar_block.settings.celebration_text | default: section.settings.celebration_text | default: 'Selamat! Kamu mendapatkan Bebas Ongkos Kirim!' }}</strong></span>
             {%- elsif cart == empty -%}
               <span class="cd-icon-shipping">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -179,6 +181,14 @@
           ></div>
         </div>
 
+        {%- liquid
+          assign show_promo_banner = false
+          if promo_banner_block != nil
+            assign show_promo_banner = true
+          elsif has_blocks == false and section.settings.show_promo_banner != false and settings.show_promo_banner != false
+            assign show_promo_banner = true
+          endif
+        -%}
         {%- if is_free_shipping -%}
           <div class="cd-shipping-bar__success-sub">
             <span class="cd-shipping-bar__success-sub-left">
@@ -189,10 +199,10 @@
             </span>
             <span class="cd-shipping-bar__success-sub-right">Hemat: {{ shipping_saved_text }}</span>
           </div>
-        {%- elsif cart != empty and promo_banner_block != nil or has_blocks == false and settings.show_promo_banner != false -%}
+        {%- elsif cart != empty and show_promo_banner -%}
           {%- liquid
-            assign promo_text = promo_banner_block.settings.text | default: settings.promo_banner_text | default: 'Hemat setiap Rp 1.100.000 dengan kupon'
-            assign promo_badge = promo_banner_block.settings.tag_label | default: settings.promo_banner_badge | default: 'Dinikmati 100x'
+            assign promo_text = promo_banner_block.settings.text | default: section.settings.promo_banner_text | default: settings.promo_banner_text | default: 'Hemat setiap Rp 1.100.000 dengan kupon'
+            assign promo_badge = promo_banner_block.settings.tag_label | default: section.settings.promo_banner_badge | default: settings.promo_banner_badge | default: 'Dinikmati 100x'
           -%}
           <div class="cd-promo-banner" {{ promo_banner_block.shopify_attributes }}>
             <div class="cd-promo-banner__left">
@@ -251,15 +261,15 @@
         {%- if cart == empty -%}
           <!-- Empty State -->
           {%- liquid
-            assign empty_heading = empty_cart_block.settings.heading | default: settings.empty_cart_heading | default: 'Keranjang Belanja Anda Kosong'
-            assign empty_desc = empty_cart_block.settings.description | default: settings.empty_cart_text | default: 'Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!'
-            assign empty_btn_text = empty_cart_block.settings.button_text | default: settings.empty_cart_btn_text | default: 'Mulai Jelajahi Produk'
-            assign empty_btn_link = empty_cart_block.settings.button_link | default: settings.empty_cart_btn_url | default: routes.all_products_collection_url
-            assign empty_rec_heading = empty_cart_block.settings.recommendations_heading | default: 'REKOMENDASI TERPOPULER'
-            assign empty_rec_limit = empty_cart_block.settings.products_to_show | default: 3
-            assign empty_collection = empty_cart_block.settings.collection | default: settings.cart_drawer_collection
-            assign empty_help_text = empty_cart_block.settings.help_text | default: settings.support_phone_text | default: 'Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7'
-            assign empty_help_link = empty_cart_block.settings.help_link | default: settings.support_phone_url | default: '/pages/contact'
+            assign empty_heading = empty_cart_block.settings.heading | default: section.settings.empty_cart_heading | default: settings.empty_cart_heading | default: 'Keranjang Belanja Anda Kosong'
+            assign empty_desc = empty_cart_block.settings.description | default: section.settings.empty_cart_text | default: settings.empty_cart_text | default: 'Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!'
+            assign empty_btn_text = empty_cart_block.settings.button_text | default: section.settings.empty_cart_btn_text | default: settings.empty_cart_btn_text | default: 'Mulai Jelajahi Produk'
+            assign empty_btn_link = empty_cart_block.settings.button_link | default: section.settings.empty_cart_btn_url | default: settings.empty_cart_btn_url | default: routes.all_products_collection_url
+            assign empty_rec_heading = empty_cart_block.settings.recommendations_heading | default: section.settings.empty_cart_rec_heading | default: 'REKOMENDASI TERPOPULER'
+            assign empty_rec_limit = empty_cart_block.settings.products_to_show | default: section.settings.empty_cart_products_count | default: 3
+            assign empty_collection = empty_cart_block.settings.collection | default: section.settings.cart_drawer_collection | default: settings.cart_drawer_collection
+            assign empty_help_text = empty_cart_block.settings.help_text | default: section.settings.support_phone_text | default: settings.support_phone_text | default: 'Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7'
+            assign empty_help_link = empty_cart_block.settings.help_link | default: section.settings.support_phone_url | default: settings.support_phone_url | default: '/pages/contact'
           -%}
           <div class="cd-empty drawer__inner-empty" {{ empty_cart_block.shopify_attributes }}>
             <div class="cd-empty__icon-wrap">
@@ -437,6 +447,21 @@
                           </cart-remove-button>
                         </div>
 
+                        {%- assign show_vendor = false -%}
+                        {%- if cart_items_block.settings.show_vendor or section.settings.show_vendor -%}
+                          {%- assign show_vendor = true -%}
+                        {%- endif -%}
+                        {%- if show_vendor and item.product.vendor != blank -%}
+                          <div class="cd-item__vendor" style="font-size: 11px; color: #8C827A; margin-bottom: 2px;">{{ item.product.vendor | escape }}</div>
+                        {%- endif -%}
+
+                        {%- assign show_change = true -%}
+                        {%- if cart_items_block != nil and cart_items_block.settings.show_change_link == false -%}
+                          {%- assign show_change = false -%}
+                        {%- elsif section.settings.show_change_link == false -%}
+                          {%- assign show_change = false -%}
+                        {%- endif -%}
+
                         <!-- Variant Info -->
                         {%- if item.product.has_only_default_variant == false -%}
                           <div class="cd-item__variant-tag">
@@ -446,7 +471,9 @@
                                 {{ option.name }}: {{ option.value }}{% unless forloop.last %}, {% endunless %}
                               {%- endfor -%}
                             </span>
-                            <a href="{{ item.url }}" class="cd-item__change">Ubah</a>
+                            {%- if show_change -%}
+                              <a href="{{ item.url }}" class="cd-item__change">Ubah</a>
+                            {%- endif -%}
                           </div>
                         {%- endif -%}
 
@@ -524,14 +551,20 @@
           </cart-drawer-items>
 
           <!-- Cross-sell / Upsell Section ("LENGKAPI DAPURMU") -->
-          {%- if upsell_block != nil or has_blocks == false and settings.show_cart_upsell != false -%}
+          {%- assign show_upsell = true -%}
+          {%- if section.settings.show_cart_upsell == false or settings.show_cart_upsell == false -%}
+            {%- assign show_upsell = false -%}
+          {%- elsif has_blocks and upsell_block == nil -%}
+            {%- assign show_upsell = false -%}
+          {%- endif -%}
+          {%- if show_upsell -%}
           {%- liquid
-            assign upsell_heading = upsell_block.settings.heading | default: settings.cart_upsell_heading | default: 'LENGKAPI DAPURMU'
-            assign upsell_subheading = upsell_block.settings.subtitle | default: settings.cart_upsell_subheading | default: 'Penawaran Eksklusif Keranjang'
-            assign upsell_desc = upsell_block.settings.item_desc | default: 'Koleksi serbaguna terbaik'
-            assign upsell_btn_text = upsell_block.settings.button_label | default: '+ Tambah'
-            assign custom_upsell_prod = upsell_block.settings.product | default: settings.cart_upsell_product
-            assign custom_upsell_col = upsell_block.settings.collection | default: settings.cart_drawer_collection
+            assign upsell_heading = upsell_block.settings.heading | default: section.settings.cart_upsell_heading | default: settings.cart_upsell_heading | default: 'LENGKAPI DAPURMU'
+            assign upsell_subheading = upsell_block.settings.subtitle | default: section.settings.cart_upsell_subheading | default: settings.cart_upsell_subheading | default: 'Penawaran Eksklusif Keranjang'
+            assign upsell_desc = upsell_block.settings.item_desc | default: section.settings.cart_upsell_desc | default: 'Koleksi serbaguna terbaik'
+            assign upsell_btn_text = upsell_block.settings.button_label | default: section.settings.cart_upsell_btn_text | default: '+ Tambah'
+            assign custom_upsell_prod = upsell_block.settings.product | default: section.settings.cart_upsell_product | default: settings.cart_upsell_product
+            assign custom_upsell_col = upsell_block.settings.collection | default: section.settings.cart_drawer_collection | default: settings.cart_drawer_collection
           -%}
           <div class="cd-upsell-section" {{ upsell_block.shopify_attributes }}>
             <div class="cd-upsell__header">
@@ -653,8 +686,8 @@
                 endif
               endfor
 
-              assign checkout_btn_text = order_summary_block.settings.button_label | default: settings.cart_checkout_button_text | default: 'Lanjut ke Pembayaran'
-              assign checkout_tax_note = order_summary_block.settings.tax_note | default: settings.cart_tax_note | default: 'Termasuk PPN & asuransi pengiriman'
+              assign checkout_btn_text = order_summary_block.settings.button_label | default: section.settings.cart_checkout_button_text | default: settings.cart_checkout_button_text | default: 'Lanjut ke Pembayaran'
+              assign checkout_tax_note = order_summary_block.settings.tax_note | default: section.settings.cart_tax_note | default: settings.cart_tax_note | default: 'Termasuk PPN & asuransi pengiriman'
             -%}
 
             <!-- Subtotal -->
@@ -680,7 +713,13 @@
             {%- endif -%}
 
             <!-- Shipping Cost Row -->
-            {%- if order_summary_block.settings.show_shipping_row != false -%}
+            {%- assign show_shipping = true -%}
+            {%- if order_summary_block != nil and order_summary_block.settings.show_shipping_row == false -%}
+              {%- assign show_shipping = false -%}
+            {%- elsif section.settings.show_shipping_row == false -%}
+              {%- assign show_shipping = false -%}
+            {%- endif -%}
+            {%- if show_shipping -%}
             <div class="cd-summary-row">
               <span class="cd-summary-row__label">Estimasi Ongkos Kirim</span>
               <div class="cd-summary-row__value">
@@ -724,11 +763,17 @@
               </form>
             </div>
 
-            {%- if trust_badges_block != nil or has_blocks == false and settings.show_trust_badges != false -%}
+            {%- assign show_badges = true -%}
+            {%- if section.settings.show_trust_badges == false or settings.show_trust_badges == false -%}
+              {%- assign show_badges = false -%}
+            {%- elsif has_blocks and trust_badges_block == nil -%}
+              {%- assign show_badges = false -%}
+            {%- endif -%}
+            {%- if show_badges -%}
               {%- liquid
-                assign badge_1 = trust_badges_block.settings.badge_1 | default: settings.trust_badge_1 | default: 'Garansi Uji Coba 100 Hari'
-                assign badge_2 = trust_badges_block.settings.badge_2 | default: settings.trust_badge_2 | default: 'Cicilan 0% Tersedia'
-                assign badge_3 = trust_badges_block.settings.badge_3 | default: settings.trust_badge_3 | default: 'Bebas Ongkir Aktif'
+                assign badge_1 = trust_badges_block.settings.badge_1 | default: section.settings.trust_badge_1 | default: settings.trust_badge_1 | default: 'Garansi Uji Coba 100 Hari'
+                assign badge_2 = trust_badges_block.settings.badge_2 | default: section.settings.trust_badge_2 | default: settings.trust_badge_2 | default: 'Cicilan 0% Tersedia'
+                assign badge_3 = trust_badges_block.settings.badge_3 | default: section.settings.trust_badge_3 | default: settings.trust_badge_3 | default: 'Bebas Ongkir Aktif'
               -%}
               <!-- Trust Badges -->
               <div class="cd-trust-badges" {{ trust_badges_block.shopify_attributes }}>
