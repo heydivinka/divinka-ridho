@@ -1,0 +1,26 @@
+{% comment %}
+  Renders the urgency and social proof banner.
+  Accepts:
+  - block: {Object} Block object with settings
+  - product: {Object} Product Liquid object
+{% endcomment %}
+
+{%- liquid
+  assign sold_count = block.settings.sold_count | default: 34
+  assign time_hours = block.settings.time_hours | default: 12
+  assign stock_left = block.settings.stock_left | default: 5
+  assign custom_text = block.settings.custom_text
+-%}
+
+<div class="exp-urgency-banner" {{ block.shopify_attributes }}>
+  <span class="exp-urgency-banner__fire" aria-hidden="true">🔥</span>
+  <div class="exp-urgency-banner__content">
+    {%- if custom_text != blank -%}
+      {{ custom_text }}
+    {%- else -%}
+      <span class="exp-urgency-banner__highlight">{{ sold_count }} dibeli dalam {{ time_hours }} jam terakhir</span>
+      <span class="exp-urgency-banner__divider"> — </span>
+      <span class="exp-urgency-banner__stock">Sisa {{ stock_left }} pcs di gudang</span>
+    {%- endif -%}
+  </div>
+</div>

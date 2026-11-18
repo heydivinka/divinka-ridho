@@ -10,6 +10,7 @@
   {% endif %}
 >
   {{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+  {{ 'exp-pdp-custom.css' | asset_url | stylesheet_tag }}
   {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
   {{ 'component-price.css' | asset_url | stylesheet_tag }}
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
@@ -41,6 +42,7 @@
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'exp-pdp-custom.js' | asset_url }}" defer="defer"></script>
   {%- if product.quantity_price_breaks_configured? -%}
     <script src="{{ 'show-more.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'price-per-item.js' | asset_url }}" defer="defer"></script>
@@ -74,6 +76,7 @@
 
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <product-component view-event-payload="{{ product | standard_event_data: 'view', context: 'page' | escape }}">
+    {% render 'exp-mobile-header', product: product %}
     <div class="page-width">
       <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
         <div class="grid__item product__media-wrapper">
@@ -92,27 +95,26 @@
                   {% render block %}
                 {%- when 'text' -%}
                   <p
-                    class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
+                    class="product__text inline-richtext{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing exp-product-eyebrow{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}"
                     {{ block.shopify_attributes }}
                   >
                     {{- block.settings.text -}}
                   </p>
                 {%- when 'title' -%}
                   <div class="product__title" {{ block.shopify_attributes }}>
-                    <h1>{{ product.title | escape }}</h1>
+                    <h1 class="exp-product-title">{{ product.title | escape }}</h1>
                     <a href="{{ product.url }}" class="product__title">
-                      <h2 class="h1">
+                      <h2 class="h1 exp-product-title">
                         {{ product.title | escape }}
                       </h2>
                     </a>
                   </div>
                 {%- when 'price' -%}
                   <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
-                    {%- render 'price',
+                    {%- render 'exp-price-custom',
                       product: product,
                       use_variant: true,
-                      show_badges: true,
-                      price_class: 'price--large'
+                      block: block
                     -%}
                   </div>
                   {%- if product.quantity_price_breaks_configured? -%}
@@ -193,11 +195,7 @@
                     {%- endif -%}
                   </p>
                 {%- when 'description' -%}
-                  {%- if product.description != blank -%}
-                    <div class="product__description rte quick-add-hidden" {{ block.shopify_attributes }}>
-                      {{ product.description }}
-                    </div>
-                  {%- endif -%}
+                  {% render 'exp-smart-description', block: block, product: product %}
                 {%- when 'sku' -%}
                   <p
                     class="product__sku{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.sku.size == 0 %} visibility-hidden{% endif %}"
@@ -538,6 +536,18 @@
                         </span>
                       </p>
                     </div>
+                  {%- else -%}
+                    <div class="exp-rating-summary" {{ block.shopify_attributes }}>
+                      <span class="exp-stars" aria-label="4.9 out of 5 stars">
+                        {%- for i in (1..5) -%}
+                          <svg viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                        {%- endfor -%}
+                      </span>
+                      <span class="exp-rating-score">4.9</span>
+                      <a href="#reviews" class="exp-rating-count">(2.418 Ulasan Terverifikasi)</a>
+                    </div>
                   {%- endif -%}
                 {%- when 'complementary' -%}
                   <product-recommendations
@@ -690,6 +700,20 @@
                   </product-recommendations>
                 {%- when 'icon-with-text' -%}
                   {% render 'icon-with-text', block: block %}
+                {%- when 'exp_urgency_banner' -%}
+                  {% render 'exp-urgency-banner', block: block, product: product %}
+                {%- when 'exp_included_items' -%}
+                  {% render 'exp-included-items', block: block %}
+                {%- when 'exp_testimonial' -%}
+                  {% render 'exp-testimonial-card', block: block %}
+                {%- when 'exp_accordion' -%}
+                  {% render 'exp-accordion-card', block: block %}
+                {%- when 'exp_cross_sell' -%}
+                  {% render 'exp-cross-sell', block: block, product: product %}
+                {%- when 'exp_trust_badges' -%}
+                  {% render 'exp-trust-badges', block: block %}
+                {%- when 'exp_smart_description' -%}
+                  {% render 'exp-smart-description', block: block, product: product %}
               {%- endcase -%}
             {%- endfor -%}
             <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -753,6 +777,8 @@
       </script>
     </div>
   </product-component>
+  {% render 'exp-sticky-atc', product: product %}
+  {% render 'exp-360-modal', product: product %}
 </product-info>
 
 {% schema %}
@@ -948,7 +974,146 @@
     {
       "type": "description",
       "name": "t:sections.main-product.blocks.description.name",
-      "limit": 1
+      "limit": 1,
+      "settings": [
+              {
+                      "type": "header",
+                      "content": "1. Termasuk Dalam Pembelian"
+              },
+              {
+                      "type": "checkbox",
+                      "id": "show_included_items",
+                      "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
+                      "default": true
+              },
+              {
+                      "type": "text",
+                      "id": "included_title",
+                      "label": "Judul Box",
+                      "default": "TERMASUK DALAM PEMBELIAN:"
+              },
+              {
+                      "type": "text",
+                      "id": "item_1",
+                      "label": "Item 1",
+                      "default": "Tutup Wajan Modular"
+              },
+              {
+                      "type": "text",
+                      "id": "item_2",
+                      "label": "Item 2",
+                      "default": "Spatula Kayu Beechwood"
+              },
+              {
+                      "type": "text",
+                      "id": "item_3",
+                      "label": "Item 3",
+                      "default": "Keranjang Steamer Stainless"
+              },
+              {
+                      "type": "text",
+                      "id": "item_4",
+                      "label": "Item 4",
+                      "default": "Spons Pembersih Khusus"
+              },
+              {
+                      "type": "text",
+                      "id": "item_5",
+                      "label": "Item 5"
+              },
+              {
+                      "type": "text",
+                      "id": "item_6",
+                      "label": "Item 6"
+              },
+              {
+                      "type": "header",
+                      "content": "2. Komentar Pembeli Terverifikasi"
+              },
+              {
+                      "type": "checkbox",
+                      "id": "show_testimonial",
+                      "label": "Tampilkan Komentar Pembeli Terverifikasi",
+                      "default": true
+              },
+              {
+                      "type": "text",
+                      "id": "testimonial_initials",
+                      "label": "Inisial Avatar",
+                      "default": "AS"
+              },
+              {
+                      "type": "text",
+                      "id": "testimonial_author",
+                      "label": "Nama Pembeli",
+                      "default": "Amanda S."
+              },
+              {
+                      "type": "text",
+                      "id": "testimonial_badge",
+                      "label": "Teks Badge Verifikasi",
+                      "default": "Pembeli Terverifikasi"
+              },
+              {
+                      "type": "textarea",
+                      "id": "testimonial_quote",
+                      "label": "Kutipan Ulasan",
+                      "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
+              },
+              {
+                      "type": "header",
+                      "content": "3. Smart Description Accordions"
+              },
+              {
+                      "type": "paragraph",
+                      "content": "Tab 1 otomatis mengambil dari Deskripsi Produk."
+              },
+              {
+                      "type": "text",
+                      "id": "tab_1_title",
+                      "label": "Judul Tab 1",
+                      "default": "Deskripsi & Keunggulan (10-in-1)"
+              },
+              {
+                      "type": "checkbox",
+                      "id": "tab_1_use_product_description",
+                      "label": "Ambil Otomatis Dari Product Description",
+                      "default": true
+              },
+              {
+                      "type": "checkbox",
+                      "id": "tab_1_open_by_default",
+                      "label": "Tab 1 Langsung Terbuka",
+                      "default": true
+              },
+              {
+                      "type": "richtext",
+                      "id": "tab_1_content",
+                      "label": "Konten Kustom Tab 1 (Fallback jika kosong)"
+              },
+              {
+                      "type": "text",
+                      "id": "tab_2_title",
+                      "label": "Judul Tab 2",
+                      "default": "Spesifikasi & Material Non-Toxic"
+              },
+              {
+                      "type": "richtext",
+                      "id": "tab_2_content",
+                      "label": "Konten Tab 2"
+              },
+              {
+                      "type": "text",
+                      "id": "tab_3_title",
+                      "label": "Judul Tab 3",
+                      "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
+              },
+              {
+                      "type": "richtext",
+                      "id": "tab_3_content",
+                      "label": "Konten Tab 3"
+              }
+      ]
     },
     {
       "type": "share",
@@ -2179,6 +2344,347 @@
           "id": "show_guide_image",
           "default": true,
           "label": "t:sections.main-product.blocks.size_chart.settings.show_guide_image.label"
+        }
+      ]
+    },
+    {
+      "type": "exp_urgency_banner",
+      "name": "EXP Urgency Banner",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "number",
+          "id": "sold_count",
+          "label": "Jumlah Terjual",
+          "default": 34
+        },
+        {
+          "type": "number",
+          "id": "time_hours",
+          "label": "Periode Waktu (Jam)",
+          "default": 12
+        },
+        {
+          "type": "number",
+          "id": "stock_left",
+          "label": "Sisa Stok di Gudang",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "custom_text",
+          "label": "Teks Kustom (Opsional)"
+        }
+      ]
+    },
+    {
+      "type": "exp_included_items",
+      "name": "EXP Termasuk Pembelian",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Judul Box",
+          "default": "TERMASUK DALAM PEMBELIAN:"
+        },
+        {
+          "type": "text",
+          "id": "item_1",
+          "label": "Item 1",
+          "default": "Tutup Wajan Modular"
+        },
+        {
+          "type": "text",
+          "id": "item_2",
+          "label": "Item 2",
+          "default": "Spatula Kayu Beechwood"
+        },
+        {
+          "type": "text",
+          "id": "item_3",
+          "label": "Item 3",
+          "default": "Keranjang Steamer Stainless"
+        },
+        {
+          "type": "text",
+          "id": "item_4",
+          "label": "Item 4",
+          "default": "Spons Pembersih Khusus"
+        },
+        {
+          "type": "text",
+          "id": "item_5",
+          "label": "Item 5"
+        },
+        {
+          "type": "text",
+          "id": "item_6",
+          "label": "Item 6"
+        }
+      ]
+    },
+    {
+      "type": "exp_testimonial",
+      "name": "EXP Testimonial",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "text",
+          "id": "initials",
+          "label": "Inisial Avatar",
+          "default": "AS"
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Nama Pembeli",
+          "default": "Amanda S."
+        },
+        {
+          "type": "text",
+          "id": "badge",
+          "label": "Teks Badge Verifikasi",
+          "default": "Pembeli Terverifikasi"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Kutipan Ulasan",
+          "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
+        }
+      ]
+    },
+    {
+      "type": "exp_accordion",
+      "name": "EXP Custom Accordion",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ikon",
+          "options": [
+            {
+              "value": "cookware",
+              "label": "Panci / Tas (Deskripsi)"
+            },
+            {
+              "value": "shield",
+              "label": "Perisai (Spesifikasi & Material)"
+            },
+            {
+              "value": "clock",
+              "label": "Jam (Garansi & Uji Coba)"
+            }
+          ],
+          "default": "cookware"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Judul Tab",
+          "default": "Deskripsi & Keunggulan (10-in-1)"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Konten Tab"
+        },
+        {
+          "type": "page",
+          "id": "page",
+          "label": "Atau Pilih Halaman"
+        }
+      ]
+    },
+    {
+      "type": "exp_cross_sell",
+      "name": "EXP Cross-Sell Card",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Judul Section",
+          "default": "Sempurna Dipadukan Dengan"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Pilih Produk Rekomendasi"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Judul Kustom (Fallback)",
+          "default": "The Perfect Pot (5.2L)"
+        },
+        {
+          "type": "text",
+          "id": "desc",
+          "label": "Subjudul / Deskripsi",
+          "default": "Panci kuah keluarga serbaguna"
+        },
+        {
+          "type": "text",
+          "id": "price",
+          "label": "Harga Kustom",
+          "default": "Rp 2.250.000"
+        }
+      ]
+    },
+    {
+      "type": "exp_trust_badges",
+      "name": "EXP Trust Badges",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Menampilkan 3 trust badge: Garansi 100 Hari, Checkout Aman, Bebas Ongkir."
+        }
+      ]
+    },
+    {
+      "type": "exp_smart_description",
+      "name": "EXP Smart Description",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "header",
+          "content": "1. Termasuk Dalam Pembelian"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_included_items",
+          "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "included_title",
+          "label": "Judul Box",
+          "default": "TERMASUK DALAM PEMBELIAN:"
+        },
+        {
+          "type": "text",
+          "id": "item_1",
+          "label": "Item 1",
+          "default": "Tutup Wajan Modular"
+        },
+        {
+          "type": "text",
+          "id": "item_2",
+          "label": "Item 2",
+          "default": "Spatula Kayu Beechwood"
+        },
+        {
+          "type": "text",
+          "id": "item_3",
+          "label": "Item 3",
+          "default": "Keranjang Steamer Stainless"
+        },
+        {
+          "type": "text",
+          "id": "item_4",
+          "label": "Item 4",
+          "default": "Spons Pembersih Khusus"
+        },
+        {
+          "type": "text",
+          "id": "item_5",
+          "label": "Item 5"
+        },
+        {
+          "type": "text",
+          "id": "item_6",
+          "label": "Item 6"
+        },
+        {
+          "type": "header",
+          "content": "2. Komentar Pembeli Terverifikasi"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_testimonial",
+          "label": "Tampilkan Komentar Pembeli Terverifikasi",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "testimonial_initials",
+          "label": "Inisial Avatar",
+          "default": "AS"
+        },
+        {
+          "type": "text",
+          "id": "testimonial_author",
+          "label": "Nama Pembeli",
+          "default": "Amanda S."
+        },
+        {
+          "type": "text",
+          "id": "testimonial_badge",
+          "label": "Teks Badge Verifikasi",
+          "default": "Pembeli Terverifikasi"
+        },
+        {
+          "type": "textarea",
+          "id": "testimonial_quote",
+          "label": "Kutipan Ulasan",
+          "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
+        },
+        {
+          "type": "header",
+          "content": "3. Smart Description Accordions"
+        },
+        {
+          "type": "paragraph",
+          "content": "Tab 1 otomatis mengambil konten dari Deskripsi Produk (product.description)."
+        },
+        {
+          "type": "text",
+          "id": "tab_1_title",
+          "label": "Judul Tab 1",
+          "default": "Deskripsi & Keunggulan (10-in-1)"
+        },
+        {
+          "type": "checkbox",
+          "id": "tab_1_use_product_description",
+          "label": "Ambil Otomatis Dari Product Description",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "tab_1_open_by_default",
+          "label": "Tab 1 Langsung Terbuka",
+          "default": true
+        },
+        {
+          "type": "richtext",
+          "id": "tab_1_content",
+          "label": "Konten Kustom Tab 1 (Fallback jika deskripsi kosong)"
+        },
+        {
+          "type": "text",
+          "id": "tab_2_title",
+          "label": "Judul Tab 2",
+          "default": "Spesifikasi & Material Non-Toxic"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_2_content",
+          "label": "Konten Tab 2"
+        },
+        {
+          "type": "text",
+          "id": "tab_3_title",
+          "label": "Judul Tab 3",
+          "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
+        },
+        {
+          "type": "richtext",
+          "id": "tab_3_content",
+          "label": "Konten Tab 3"
         }
       ]
     }

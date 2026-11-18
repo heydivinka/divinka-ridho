@@ -23,6 +23,7 @@
   >
     {%- for option in product.options_with_values -%}
       {%- liquid
+        assign opt_name_lower = option.name | downcase
         assign swatch_count = option.values | map: 'swatch' | compact | size
         assign picker_type = block.settings.picker_type
 
@@ -34,7 +35,11 @@
           endif
         endif
       -%}
-      {%- if picker_type == 'swatch' -%}
+      {%- if opt_name_lower contains 'color' or opt_name_lower contains 'warna' -%}
+        {% render 'exp-color-swatches', product: product, option: option, block: block %}
+      {%- elsif opt_name_lower contains 'size' or opt_name_lower contains 'ukuran' -%}
+        {% render 'exp-size-cards', product: product, option: option, block: block %}
+      {%- elsif picker_type == 'swatch' -%}
         <fieldset class="js product-form__input product-form__input--swatch">
           <legend class="form__label">
             {{ option.name }}:
@@ -98,4 +103,9 @@
       {{ product.selected_or_first_available_variant | json }}
     </script>
   </variant-selects>
+{%- else -%}
+  <div {{ block.shopify_attributes }}>
+    {% render 'exp-color-swatches', product: product, block: block %}
+    {% render 'exp-size-cards', product: product, block: block %}
+  </div>
 {%- endunless -%}

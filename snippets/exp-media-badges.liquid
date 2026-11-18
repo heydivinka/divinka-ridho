@@ -1,0 +1,53 @@
+{% comment %}
+  Renders the badges, 360 view button, slider dots, and counter on top of the product gallery.
+  Accepts:
+  - product: {Object} Product Liquid object
+  - media_count: {Number} Total media count
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign compare_at = current_variant.compare_at_price | default: product.compare_at_price
+  assign price = current_variant.price | default: product.price
+  assign discount_percent = 20
+
+  if compare_at > price
+    assign savings = compare_at | minus: price
+    assign discount_percent = savings | times: 100 | divided_by: compare_at
+  endif
+
+  assign total_count = media_count | default: product.media.size | default: 6
+  if total_count < 1
+    assign total_count = 6
+  endif
+-%}
+
+<div class="exp-media-badges">
+  <div class="exp-media-badges__top-left">
+    <span class="exp-badge-bestseller">BEST SELLER #1</span>
+    {%- if compare_at > price -%}
+      <span class="exp-badge-discount">HEMAT {{ discount_percent }}%</span>
+    {%- endif -%}
+  </div>
+
+  <div class="exp-media-badges__top-right">
+    <button type="button" class="exp-btn-360" aria-label="Open 360 view">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span>360° View</span>
+    </button>
+  </div>
+
+  <div class="exp-media-badges__bottom-left">
+    {%- for i in (1..total_count) -%}
+      <span class="exp-slider-dot{% if forloop.first %} is-active{% endif %}"></span>
+    {%- endfor -%}
+  </div>
+
+  <div class="exp-media-badges__bottom-right">
+    <span class="exp-slider-counter">
+      <span class="exp-slider-counter--current">1</span> / {{ total_count }}
+    </span>
+  </div>
+</div>

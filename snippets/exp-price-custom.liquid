@@ -1,0 +1,57 @@
+{% comment %}
+  Renders the enhanced custom PDP price display.
+  Accepts:
+  - product: {Object} Product Liquid object
+  - use_variant: {Boolean}
+  - block: {Object}
+{% endcomment %}
+
+{%- liquid
+  if use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign price = target.price | default: 165000000
+  assign compare_at_price = target.compare_at_price
+
+  assign on_sale = false
+  if compare_at_price > price
+    assign on_sale = true
+    assign savings = compare_at_price | minus: price
+  elsif product.price == blank
+    assign on_sale = true
+    assign savings = 45000000
+    assign compare_at_price = 210000000
+  endif
+-%}
+
+<div class="exp-price-container" id="price-{{ section.id }}" {{ block.shopify_attributes }}>
+  <div class="exp-price-main">
+    <span class="exp-price-currency">{{ cart.currency.symbol | default: 'Rp' }}</span>
+    <span class="exp-price-amount">
+      {%- if product.price != blank -%}
+        {{ price | money_without_currency | remove: ',00' }}
+      {%- else -%}
+        1.650.000
+      {%- endif -%}
+    </span>
+  </div>
+
+  {%- if on_sale -%}
+    <div class="exp-price-compare">
+      <span>{{ cart.currency.symbol | default: 'Rp' }}</span>
+      <s>
+        {{ compare_at_price | money_without_currency | remove: ',00' }}
+      </s>
+    </div>
+
+    <div class="exp-price-savings-pill">
+      <span class="exp-price-savings-label">Hemat {{ cart.currency.symbol | default: 'Rp' }}</span>
+      <span class="exp-price-savings-amount">
+        {{ savings | money_without_currency | remove: ',00' }}
+      </span>
+    </div>
+  {%- endif -%}
+</div>
