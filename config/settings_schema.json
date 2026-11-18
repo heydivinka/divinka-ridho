@@ -1464,15 +1464,8 @@
         "type": "number",
         "id": "free_shipping_threshold",
         "label": "Batas Harga Belanja untuk Gratis Ongkir",
-        "info": "Contoh: Masukkan 2000000 untuk target belanja Rp 2.000.000",
+        "info": "Contoh: Masukkan 2000000 untuk target belanja Rp 2.000.000 (berlaku saat keranjang kosong maupun aktif)",
         "default": 2000000
-      },
-      {
-        "type": "number",
-        "id": "free_shipping_empty_threshold",
-        "label": "Batas Minimal Belanja saat Keranjang Kosong",
-        "info": "Contoh: Masukkan 500000 untuk tampilan 'Belanja minimal Rp 500.000'",
-        "default": 500000
       },
       {
         "type": "number",

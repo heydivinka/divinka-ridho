@@ -23,7 +23,7 @@
     assign enable_free_shipping = true
   endif
 
-  # Threshold configuration from Theme Settings
+  # Threshold configuration from Theme Settings (Single Unified Free Shipping Limit)
   assign raw_threshold = settings.free_shipping_threshold
   if raw_threshold == blank or raw_threshold <= 0
     assign raw_threshold = 2000000
@@ -35,15 +35,8 @@
     assign threshold_amount = raw_threshold | times: 100
   endif
 
-  assign raw_empty_threshold = settings.free_shipping_empty_threshold
-  if raw_empty_threshold == blank or raw_empty_threshold <= 0
-    assign raw_empty_threshold = 500000
-  endif
-  if raw_empty_threshold > 50000000
-    assign empty_threshold_amount = raw_empty_threshold
-  else
-    assign empty_threshold_amount = raw_empty_threshold | times: 100
-  endif
+  # Use the same threshold whether cart is empty or has items
+  assign empty_threshold_amount = threshold_amount
 
   # Estimasi Ongkos Kirim Standar (Regular Shipping Fee)
   assign raw_shipping_fee = settings.estimated_shipping_fee
@@ -345,72 +338,92 @@
               method="post"
             >
               <div id="CartDrawer-CartItems" class="drawer__contents js-contents">
-                <table class="cart-items" role="table">
-                  <tbody role="rowgroup">
-                    {%- for item in cart.items -%}
-                      <tr
-                        id="CartDrawer-Item-{{ item.index | plus: 1 }}"
-                        class="cart-item cd-item-card"
-                        role="row"
-                      >
-                        <!-- Item Media -->
-                        <td class="cart-item__media cd-item__media" role="cell">
-                          {% if item.image %}
-                            <img
-                              class="cd-item__image"
-                              src="{{ item.image | image_url: width: 200 }}"
-                              alt="{{ item.image.alt | escape }}"
-                              loading="lazy"
-                              width="74"
-                              height="74"
-                            >
-                          {% else %}
-                            <div class="cd-item__image" style="background: #F4EFEB; display:flex; align-items:center; justify-content:center;">
-                              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#BA5635" stroke-width="1.5">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21 15 16 10 5 21"/>
-                              </svg>
-                            </div>
-                          {% endif %}
-                        </td>
+                <div class="cart-items cd-items-list">
+                  {%- for item in cart.items -%}
+                    <div
+                      id="CartDrawer-Item-{{ item.index | plus: 1 }}"
+                      class="cart-item cd-item-card"
+                    >
+                      <!-- Item Media (Square Thumbnail 64x64) -->
+                      <div class="cd-item__media">
+                        {% if item.image %}
+                          <img
+                            class="cd-item__image"
+                            src="{{ item.image | image_url: width: 140 }}"
+                            alt="{{ item.image.alt | escape }}"
+                            loading="lazy"
+                            width="64"
+                            height="64"
+                          >
+                        {% else %}
+                          <div class="cd-item__image" style="background: #F4EFEB; display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#BA5635" stroke-width="1.5">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                              <circle cx="8.5" cy="8.5" r="1.5"/>
+                              <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                          </div>
+                        {% endif %}
+                      </div>
 
-                        <!-- Item Details -->
-                        <td class="cart-item__details cd-item__details" role="cell">
+                      <!-- Item Content Column -->
+                      <div class="cd-item__content">
+                        <!-- Top Row: Title & Remove Trash Button -->
+                        <div class="cd-item__top-row">
                           <a href="{{ item.url }}" class="cd-item__title">
                             {{- item.product.title | escape -}}
                           </a>
+                          <cart-remove-button
+                            id="CartDrawer-Remove-{{ item.index | plus: 1 }}"
+                            data-index="{{ item.index | plus: 1 }}"
+                          >
+                            <button
+                              type="button"
+                              class="cd-remove-btn"
+                              aria-label="Hapus {{ item.title | escape }}"
+                              data-variant-id="{{ item.variant.id }}"
+                            >
+                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6V20C19 21.1 18.1 22 17 22H7C5.9 22 5 21.1 5 20V6M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                              </svg>
+                            </button>
+                          </cart-remove-button>
+                        </div>
 
-                          <!-- Variant info -->
-                          {%- if item.product.has_only_default_variant == false -%}
-                            <div class="cd-item__variant-tag">
-                              <span class="cd-variant-dot"></span>
-                              <span>
-                                {%- for option in item.options_with_values -%}
-                                  {{ option.name }}: {{ option.value }}{% unless forloop.last %}, {% endunless %}
-                                {%- endfor -%}
-                              </span>
-                              <a href="{{ item.url }}" class="cd-item__change">Ubah</a>
-                            </div>
-                          {%- endif -%}
+                        <!-- Variant Info -->
+                        {%- if item.product.has_only_default_variant == false -%}
+                          <div class="cd-item__variant-tag">
+                            <span class="cd-variant-dot"></span>
+                            <span>
+                              {%- for option in item.options_with_values -%}
+                                {{ option.name }}: {{ option.value }}{% unless forloop.last %}, {% endunless %}
+                              {%- endfor -%}
+                            </span>
+                            <a href="{{ item.url }}" class="cd-item__change">Ubah</a>
+                          </div>
+                        {%- endif -%}
 
-                          <!-- Pricing -->
-                          <div class="cd-item__price-row">
+                        <!-- Bottom Row: Price & Quantity Stepper -->
+                        <div class="cd-item__bottom-row">
+                          <div class="cd-item__price-wrap">
                             <span class="cd-item__price">{{ item.final_price | money }}</span>
                             {%- if item.original_price != item.final_price -%}
-                              <span class="cd-item__old-price">{{ item.original_price | money }}</span>
+                              <s class="cd-item__old-price">{{ item.original_price | money }}</s>
                             {%- elsif item.variant.compare_at_price > item.final_price -%}
-                              <span class="cd-item__old-price">{{ item.variant.compare_at_price | money }}</span>
+                              <s class="cd-item__old-price">{{ item.variant.compare_at_price | money }}</s>
                             {%- endif -%}
                           </div>
 
-                          <!-- Quantity selector -->
+                          <!-- Quantity Stepper Pill -->
                           <div class="cd-item__actions">
                             <quantity-popover>
                               <div class="quantity-popover-wrapper">
-                                <quantity-input class="quantity cart-quantity cd-qty-pill">
+                                <quantity-input class="cd-qty-pill">
                                   <button
-                                    class="quantity__button cd-qty-btn"
+                                    class="cd-qty-btn"
                                     name="minus"
                                     type="button"
                                     aria-label="Kurangi kuantitas"
@@ -418,7 +431,7 @@
                                     &minus;
                                   </button>
                                   <input
-                                    class="quantity__input cd-qty-input"
+                                    class="cd-qty-input"
                                     type="number"
                                     data-quantity-variant-id="{{ item.variant.id }}"
                                     data-quantity-line-key="{{ item.key }}"
@@ -431,7 +444,7 @@
                                     data-index="{{ item.index | plus: 1 }}"
                                   >
                                   <button
-                                    class="quantity__button cd-qty-btn"
+                                    class="cd-qty-btn"
                                     name="plus"
                                     type="button"
                                     aria-label="Tambah kuantitas"
@@ -442,42 +455,20 @@
                               </div>
                             </quantity-popover>
                           </div>
+                        </div>
 
-                          <!-- Line Item Error -->
-                          <div
-                            id="CartDrawer-LineItemError-{{ item.index | plus: 1 }}"
-                            class="cart-item__error"
-                            role="alert"
-                          >
-                            <small class="cart-item__error-text"></small>
-                          </div>
-                        </td>
-
-                        <!-- Remove Button (Top Right Trash Icon) -->
-                        <td style="display:contents;">
-                          <cart-remove-button
-                            id="CartDrawer-Remove-{{ item.index | plus: 1 }}"
-                            data-index="{{ item.index | plus: 1 }}"
-                          >
-                            <button
-                              type="button"
-                              class="cd-remove-btn"
-                              aria-label="Hapus {{ item.title | escape }}"
-                              data-variant-id="{{ item.variant.id }}"
-                            >
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6V20C19 21.1 18.1 22 17 22H7C5.9 22 5 21.1 5 20V6M8 6V4C8 2.9 8.9 2 10 2H14C15.1 2 16 2.9 16 4V6"></path>
-                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                              </svg>
-                            </button>
-                          </cart-remove-button>
-                        </td>
-                      </tr>
-                    {%- endfor -%}
-                  </tbody>
-                </table>
+                        <!-- Line Item Error -->
+                        <div
+                          id="CartDrawer-LineItemError-{{ item.index | plus: 1 }}"
+                          class="cart-item__error"
+                          role="alert"
+                        >
+                          <small class="cart-item__error-text"></small>
+                        </div>
+                      </div>
+                    </div>
+                  {%- endfor -%}
+                </div>
               </div>
 
               <p id="CartDrawer-LiveRegionText" class="visually-hidden" role="status"></p>
@@ -512,19 +503,37 @@
               endif
 
               if upsell_product == nil
-                for p in collections.all.products
-                  assign in_cart = false
-                  for it in cart.items
-                    if it.product_id == p.id
-                      assign in_cart = true
+                assign store_prods = nil
+                if settings.cart_drawer_collection != blank and settings.cart_drawer_collection.products.size > 0
+                  assign store_prods = settings.cart_drawer_collection.products
+                elsif collections['all'] != blank and collections['all'].products.size > 0
+                  assign store_prods = collections['all'].products
+                elsif collections['rido-ganteng'] != blank and collections['rido-ganteng'].products.size > 0
+                  assign store_prods = collections['rido-ganteng'].products
+                else
+                  for col in collections
+                    if col.products.size > 0
+                      assign store_prods = col.products
                       break
                     endif
                   endfor
-                  if in_cart == false and p.available
-                    assign upsell_product = p
-                    break
-                  endif
-                endfor
+                endif
+
+                if store_prods != nil
+                  for p in store_prods
+                    assign in_cart = false
+                    for it in cart.items
+                      if it.product_id == p.id
+                        assign in_cart = true
+                        break
+                      endif
+                    endfor
+                    if in_cart == false and p.available
+                      assign upsell_product = p
+                      break
+                    endif
+                  endfor
+                endif
               endif
             -%}
 
@@ -536,20 +545,21 @@
                       class="cd-upsell__img"
                       src="{{ upsell_product.featured_image | image_url: width: 100 }}"
                       alt="{{ upsell_product.title | escape }}"
-                      width="48"
-                      height="48"
+                      width="44"
+                      height="44"
+                      loading="lazy"
                     >
                   {%- else -%}
-                    <div class="cd-upsell__img">
-                      <svg width="24" height="24" viewBox="0 0 32 32" fill="none" stroke="#BA5635" stroke-width="1.8">
+                    <div class="cd-upsell__img" style="display:flex;align-items:center;justify-content:center;background:#FAF6F2;">
+                      <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="#BA5635" stroke-width="1.8">
                         <path d="M7 14C7 21 11 25 16 25C21 25 25 21 25 14H7Z"/>
                         <path d="M5 14H27"/>
                       </svg>
                     </div>
                   {%- endif -%}
                   <div class="cd-upsell__info">
-                    <span class="cd-upsell__name">{{ upsell_product.title }}</span>
-                    <span class="cd-upsell__desc">Koleksi dapur serbaguna terbaik</span>
+                    <span class="cd-upsell__name">{{ upsell_product.title | escape }}</span>
+                    <span class="cd-upsell__desc">Koleksi serbaguna terbaik</span>
                     <div class="cd-upsell__price-wrap">
                       <span class="cd-upsell__price">{{ upsell_product.price | money }}</span>
                       {%- if upsell_product.compare_at_price > upsell_product.price -%}
@@ -562,34 +572,6 @@
                   type="button"
                   class="cd-upsell__btn"
                   onclick="addCrossSellItem(this, '{{ upsell_product.first_available_variant.id }}')"
-                >
-                  + Tambah
-                </button>
-              </div>
-            {%- else -%}
-              <!-- Curated Cross-sell Card Matching Figma Design -->
-              <div class="cd-upsell__card">
-                <div class="cd-upsell__card-left">
-                  <div class="cd-upsell__img">
-                    <svg width="26" height="26" viewBox="0 0 32 32" fill="none" stroke="#BA5635" stroke-width="1.8">
-                      <path d="M7 14C7 21 11 25 16 25C21 25 25 21 25 14H7Z"/>
-                      <path d="M5 14H27"/>
-                      <circle cx="16" cy="10" r="1.5" fill="#BA5635"/>
-                    </svg>
-                  </div>
-                  <div class="cd-upsell__info">
-                    <span class="cd-upsell__name">Perfect Pot 5.5L</span>
-                    <span class="cd-upsell__desc">Panci serbaguna 8 pemanggang &amp; in 1</span>
-                    <div class="cd-upsell__price-wrap">
-                      <span class="cd-upsell__price">Rp 1.650.000</span>
-                      <span class="cd-upsell__old-price">Rp 2.250.000</span>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  class="cd-upsell__btn"
-                  onclick="addCrossSellItem(this, '')"
                 >
                   + Tambah
                 </button>
@@ -715,37 +697,51 @@
 <script>
   function addCrossSellItem(btn, variantId) {
     if (!variantId) {
-      alert('Produk berhasil ditambahkan ke keranjang!');
+      console.warn('addCrossSellItem: No variant ID provided');
       return;
     }
     btn.disabled = true;
     const oldHtml = btn.innerHTML;
     btn.innerHTML = '...';
 
-    fetch(window.Shopify ? `${window.Shopify.routes.root}cart/add.js` : '/cart/add.js', {
+    const rootUrl = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
+    const addUrl = `${rootUrl}cart/add.js`;
+
+    fetch(addUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({ id: variantId, quantity: 1 })
+      body: JSON.stringify({
+        id: Number(variantId),
+        quantity: 1,
+        sections: 'cart-drawer,cart-icon-bubble'
+      })
     })
       .then(res => res.json())
-      .then(() => {
-        // Refresh cart drawer content
-        fetch(window.Shopify ? `${window.Shopify.routes.root}cart?section_id=cart-drawer` : '/cart?section_id=cart-drawer')
-          .then(r => r.text())
-          .then(htmlStr => {
-            const parsed = new DOMParser().parseFromString(htmlStr, 'text/html');
-            const newInner = parsed.querySelector('.drawer__inner');
-            const curInner = document.querySelector('.drawer__inner');
-            if (newInner && curInner) {
-              curInner.replaceWith(newInner);
-            }
-          });
+      .then(data => {
+        const cartDrawer = document.querySelector('cart-drawer');
+        if (cartDrawer && typeof cartDrawer.renderContents === 'function') {
+          cartDrawer.renderContents(data);
+        } else {
+          fetch(`${rootUrl}cart?section_id=cart-drawer`)
+            .then(r => r.text())
+            .then(htmlStr => {
+              const parsed = new DOMParser().parseFromString(htmlStr, 'text/html');
+              const newInner = parsed.querySelector('.drawer__inner');
+              const curInner = document.querySelector('.drawer__inner');
+              if (newInner && curInner) {
+                curInner.innerHTML = newInner.innerHTML;
+              }
+            });
+        }
+        if (window.PUB_SUB_EVENTS && typeof window.publish === 'function') {
+          window.publish(window.PUB_SUB_EVENTS.cartUpdate, { source: 'cart-upsell', cartData: data });
+        }
       })
       .catch(err => {
-        console.error(err);
+        console.error('Error adding cross-sell product:', err);
         btn.disabled = false;
         btn.innerHTML = oldHtml;
       });
