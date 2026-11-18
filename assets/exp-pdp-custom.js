@@ -8,8 +8,17 @@
  * - Cross-sell item quick-add
  */
 
+let expStickyObserver = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   initExpPdp();
+});
+
+// Re-bind section-scoped observers when Shopify Theme Editor live-updates schema settings
+document.addEventListener('shopify:section:load', () => {
+  setupStickyAtcObserver(true);
+  init360Modal();
+  initSliderObserver();
 });
 
 function initExpPdp() {
@@ -20,24 +29,21 @@ function initExpPdp() {
   initWishlistToggle();
   initCrossSell();
   initSliderObserver();
-  initSmartDescriptionParser();
 }
 
 /**
- * 1. Sticky Add to Cart Synchronization
+ * 1. Sticky Add to Cart Synchronization (Event Delegation + Live Theme Editor Support)
  */
 function initStickyAtc() {
-  const stickyAtc = document.querySelector('.exp-sticky-atc');
-  const stickyBtn = document.querySelector('.exp-sticky-atc__btn');
-  const mainBuyBtn = document.querySelector('.product-form__submit');
+  // Delegated click handler so it survives Theme Editor section reloads
+  document.addEventListener('click', (e) => {
+    const stickyBtn = e.target.closest('.exp-sticky-atc__btn');
+    if (!stickyBtn) return;
 
-  if (!stickyAtc || !stickyBtn) return;
-
-  // On click of sticky CTA, click the native product submit button
-  stickyBtn.addEventListener('click', (e) => {
     e.preventDefault();
     const currentMainBtn = document.querySelector('.product-form__submit');
     if (currentMainBtn) {
+      if (currentMainBtn.disabled || currentMainBtn.getAttribute('aria-disabled') === 'true') return;
       currentMainBtn.click();
     } else {
       const form = document.querySelector('product-form form');
@@ -45,66 +51,158 @@ function initStickyAtc() {
     }
   });
 
-  // Desktop scroll observer: show sticky bar when main CTA scrolls out of view
-  if (window.innerWidth >= 750 && mainBuyBtn) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-          stickyAtc.classList.add('is-visible');
-        } else {
-          stickyAtc.classList.remove('is-visible');
-        }
-      });
-    }, { threshold: 0.1 });
+  setupStickyAtcObserver(false);
+}
 
-    observer.observe(mainBuyBtn);
+function setupStickyAtcObserver(isEditorReload) {
+  if (expStickyObserver) {
+    expStickyObserver.disconnect();
+    expStickyObserver = null;
+  }
+
+  const stickyAtc = document.querySelector('.exp-sticky-atc');
+  const mainBuyBtn = document.querySelector('.product-form__submit');
+  if (!stickyAtc || !mainBuyBtn) return;
+
+  const evaluateVisibility = () => {
+    const rect = mainBuyBtn.getBoundingClientRect();
+    const scrolledPast = rect.bottom < 0;
+    stickyAtc.classList.toggle('is-visible', scrolledPast);
+  };
+
+  // Always attach observer (works even when switching Mobile <-> Desktop preview without reload)
+  expStickyObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+        stickyAtc.classList.add('is-visible');
+      } else {
+        stickyAtc.classList.remove('is-visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  expStickyObserver.observe(mainBuyBtn);
+
+  // Immediately evaluate visibility on reload or in Theme Editor designMode
+  if (isEditorReload || (window.Shopify && window.Shopify.designMode)) {
+    evaluateVisibility();
+    // In Theme Editor when section is just reloaded after tweaking sticky ATC settings, show it briefly if scrolled or at top
+    if (isEditorReload && window.Shopify && window.Shopify.designMode && window.innerWidth >= 750) {
+      stickyAtc.classList.add('is-visible');
+    }
+  } else {
+    evaluateVisibility();
   }
 }
 
 /**
- * 2. Color Swatches Sync
+ * 2. Color Swatches Sync (Event Delegation — survives Dawn <variant-selects> DOM swap)
  */
 function initColorSwatchesSync() {
-  const colorRadios = document.querySelectorAll('.exp-swatch-item input[type="radio"]');
-  const colorSelectedName = document.querySelector('.exp-color-selected-name');
-  const stickyVariantText = document.querySelector('.exp-sticky-atc__variant');
-
-  colorRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      const colorVal = e.target.value;
-      if (colorSelectedName) {
-        colorSelectedName.textContent = colorVal.toUpperCase();
-      }
-      updateStickyVariantLabel();
-    });
+  document.addEventListener('change', (e) => {
+    const radio = e.target.closest('.exp-swatch-item input[type="radio"]');
+    if (!radio) return;
+    const section = radio.closest('.exp-color-section');
+    const colorSelectedName = section?.querySelector('.exp-color-selected-name');
+    if (colorSelectedName) {
+      colorSelectedName.textContent = radio.value.toUpperCase();
+    }
+    updateStickyVariantLabel();
   });
 }
 
 /**
- * 3. Size Cards Sync
+ * 3. Size Cards Sync (Event Delegation + Dawn PUB_SUB variantChange subscription)
  */
 function initSizeCardsSync() {
-  const sizeRadios = document.querySelectorAll('.exp-size-card input[type="radio"]');
-  const sizeSelectedName = document.querySelector('.exp-size-selected-name');
-
-  sizeRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-      const sizeVal = e.target.value;
-      if (sizeSelectedName) {
-        sizeSelectedName.textContent = sizeVal.toUpperCase();
-      }
-      updateStickyVariantLabel();
-    });
+  document.addEventListener('change', (e) => {
+    const radio = e.target.closest('.exp-size-card input[type="radio"]');
+    if (!radio) return;
+    const section = radio.closest('.exp-size-section');
+    const sizeSelectedName = section?.querySelector('.exp-size-selected-name');
+    if (sizeSelectedName) {
+      sizeSelectedName.textContent = radio.value.toUpperCase();
+    }
+    updateStickyVariantLabel();
   });
+
+  // Subscribe to Dawn's native variantChange event to sync Sticky ATC price, image, and availability
+  if (typeof subscribe === 'function' && typeof PUB_SUB_EVENTS !== 'undefined' && PUB_SUB_EVENTS.variantChange) {
+    subscribe(PUB_SUB_EVENTS.variantChange, ({ data }) => {
+      const variant = data?.variant;
+      syncStickyAtcWithVariant(variant, data?.html);
+    });
+  }
 }
 
 function updateStickyVariantLabel() {
   const stickyVariantText = document.querySelector('.exp-sticky-atc__variant');
-  const activeColor = document.querySelector('.exp-swatch-item input[type="radio"]:checked')?.value || 'Spice';
-  const activeSize = document.querySelector('.exp-size-card input[type="radio"]:checked')?.value || '28cm';
+  if (!stickyVariantText) return;
 
-  if (stickyVariantText) {
-    stickyVariantText.textContent = `${activeColor} • ${activeSize}`;
+  const selectedValues = Array.from(
+    document.querySelectorAll('variant-selects fieldset input[type="radio"]:checked, variant-selects select')
+  )
+    .map((el) => el.value)
+    .filter(Boolean);
+
+  if (selectedValues.length > 0) {
+    stickyVariantText.textContent = selectedValues.join(' • ');
+  }
+}
+
+function syncStickyAtcWithVariant(variant, html) {
+  const stickyAtc = document.querySelector('.exp-sticky-atc');
+  if (!stickyAtc) return;
+
+  const stickyVariantText = stickyAtc.querySelector('.exp-sticky-atc__variant');
+  const stickyCurrent = stickyAtc.querySelector('.exp-sticky-atc__current');
+  const stickyCompare = stickyAtc.querySelector('.exp-sticky-atc__compare');
+  const stickyBtn = stickyAtc.querySelector('.exp-sticky-atc__btn');
+  const stickyBtnSpan = stickyBtn?.querySelector('span');
+  const stickyThumb = stickyAtc.querySelector('.exp-sticky-atc__thumb');
+
+  if (!variant) {
+    if (stickyBtn) stickyBtn.disabled = true;
+    if (stickyBtnSpan) stickyBtnSpan.textContent = 'Tidak Tersedia';
+    return;
+  }
+
+  if (stickyVariantText && variant.title && variant.title !== 'Default Title') {
+    stickyVariantText.textContent = variant.title.replace(/\s*\/\s*/g, ' • ');
+  }
+
+  // Extract formatted price from Dawn's fresh server-rendered price block when available
+  const freshPriceContainer = html?.querySelector('.exp-price-container');
+  const freshCurrency = freshPriceContainer?.querySelector('.exp-price-currency')?.textContent?.trim() || 'Rp';
+  const freshAmount = freshPriceContainer?.querySelector('.exp-price-amount')?.textContent?.trim();
+  const freshCompare = freshPriceContainer?.querySelector('.exp-price-compare s')?.textContent?.trim();
+
+  const customBtnLabel = stickyAtc.dataset.buttonLabel || 'Tambah ke Keranjang';
+
+  if (freshAmount) {
+    if (stickyCurrent) stickyCurrent.textContent = `${freshCurrency} ${freshAmount}`;
+    if (stickyBtnSpan) {
+      stickyBtnSpan.textContent = variant.available
+        ? `${customBtnLabel} • ${freshCurrency} ${freshAmount}`
+        : 'Stok Habis';
+    }
+  }
+
+  if (stickyCompare) {
+    if (freshCompare) {
+      stickyCompare.textContent = `${freshCurrency} ${freshCompare}`;
+      stickyCompare.style.display = '';
+    } else {
+      stickyCompare.style.display = 'none';
+    }
+  }
+
+  if (stickyBtn) {
+    stickyBtn.disabled = !variant.available;
+  }
+
+  if (stickyThumb && stickyThumb.tagName === 'IMG' && variant.featured_image?.src) {
+    stickyThumb.src = variant.featured_image.src;
   }
 }
 
@@ -203,48 +301,79 @@ function initWishlistToggle() {
 }
 
 /**
- * 6. Cross-sell "+ Tambah" Quick-Add
+ * 6. Cross-sell & Related Products "+ Tambah" Quick-Add (Event Delegation for async <product-recommendations>)
  */
 function initCrossSell() {
-  const crossSellBtn = document.querySelector('.exp-cross-sell-btn');
-  if (!crossSellBtn) return;
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.exp-cross-sell-btn, .exp-related-quick-add');
+    if (!btn || btn.disabled) return;
 
-  crossSellBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    const variantId = crossSellBtn.dataset.variantId;
+    const variantId = btn.dataset.variantId;
+    const originalHtml = btn.dataset.originalHtml || btn.innerHTML;
+    btn.dataset.originalHtml = originalHtml;
+
     if (!variantId) {
-      crossSellBtn.textContent = '✓ Ditambahkan';
-      crossSellBtn.classList.add('is-added');
+      btn.textContent = '✓ Ditambahkan';
+      btn.classList.add('is-added');
       return;
     }
 
     try {
-      crossSellBtn.disabled = true;
-      crossSellBtn.textContent = 'Menambahkan...';
+      btn.disabled = true;
+      btn.textContent = 'Menambahkan...';
 
-      const res = await fetch('/cart/add.js', {
+      const cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
+      const payload = { id: Number(variantId), quantity: 1 };
+      if (cart && typeof cart.getSectionsToRender === 'function') {
+        payload.sections = cart.getSectionsToRender().map((s) => s.id).join(',');
+        payload.sections_url = window.location.pathname;
+        if (typeof cart.setActiveElement === 'function') {
+          cart.setActiveElement(btn);
+        }
+      }
+
+      const addUrl = (window.routes && window.routes.cart_add_url) ? `${window.routes.cart_add_url}.js` : '/cart/add.js';
+      const res = await fetch(addUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ id: variantId, quantity: 1 })
+        body: JSON.stringify(payload)
       });
 
-      if (res.ok) {
-        crossSellBtn.textContent = '✓ Ditambahkan';
-        crossSellBtn.classList.add('is-added');
-        // Publish cart update event for Dawn
+      const data = await res.json();
+
+      if (res.ok && !data.status) {
+        btn.textContent = '✓ Ditambahkan';
+        btn.classList.add('is-added');
+
         if (window.publish && window.PUB_SUB_EVENTS) {
-          window.publish(window.PUB_SUB_EVENTS.cartUpdate, { source: 'exp-cross-sell' });
+          window.publish(window.PUB_SUB_EVENTS.cartUpdate, {
+            source: 'exp-related-quick-add',
+            productVariantId: variantId,
+            cartData: data
+          });
         }
+
+        if (cart && typeof cart.renderContents === 'function') {
+          if (cart.classList.contains('is-empty')) cart.classList.remove('is-empty');
+          cart.renderContents(data);
+        }
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.classList.remove('is-added');
+          btn.innerHTML = originalHtml;
+        }, 2200);
       } else {
-        crossSellBtn.textContent = '+ Tambah';
-        crossSellBtn.disabled = false;
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
       }
     } catch (err) {
-      crossSellBtn.textContent = '✓ Ditambahkan';
-      crossSellBtn.classList.add('is-added');
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
     }
   });
 }
@@ -262,133 +391,87 @@ function initSliderObserver() {
   const slides = slider.querySelectorAll('.product__media-item');
   if (slides.length <= 1) return;
 
-  slider.addEventListener('scroll', () => {
-    const scrollLeft = slider.scrollLeft;
-    const slideWidth = slides[0].offsetWidth || 1;
-    const activeIndex = Math.round(scrollLeft / slideWidth);
+  const getSlideWidth = () => slides[0].offsetWidth || slider.clientWidth || 1;
 
+  const updateActiveSlide = (activeIndex) => {
+    const clamped = Math.max(0, Math.min(activeIndex, slides.length - 1));
     dots.forEach((dot, idx) => {
-      dot.classList.toggle('is-active', idx === activeIndex);
+      dot.classList.toggle('is-active', idx === clamped);
     });
-
     if (counterCurrent) {
-      counterCurrent.textContent = (activeIndex + 1);
+      counterCurrent.textContent = (clamped + 1);
     }
+  };
+
+  slider.addEventListener('scroll', () => {
+    updateActiveSlide(Math.round(slider.scrollLeft / getSlideWidth()));
   }, { passive: true });
-}
 
-
-/**
- * 8. Smart Description Parser
- * Memproses product.description agar tidak memuat semua deskripsi ke satu tab:
- * - Paragraf cerita, keunggulan, & intro masuk ke Tab 1 (Deskripsi & Keunggulan)
- * - Spesifikasi, ukuran, berat, bahan, & pack size masuk ke Tab 2 (Spesifikasi & Material Non-Toxic)
- * - Kebijakan, jaminan, & garansi masuk ke Tab 3 (Garansi Uji Coba 100 Hari Bebas Risiko)
- */
-function initSmartDescriptionParser() {
-  const container = document.querySelector('.exp-smart-description');
-  if (!container) return;
-
-  const rawDescription = container.getAttribute('data-raw-description');
-  if (!rawDescription) return;
-
-  const tab1Body = container.querySelector('.exp-accordion-body[data-tab-type="desc"]');
-  const tab2Body = container.querySelector('.exp-accordion-body[data-tab-type="specs"]');
-  const tab3Body = container.querySelector('.exp-accordion-body[data-tab-type="warranty"]');
-
-  if (!tab1Body || !tab2Body) return;
-
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(rawDescription, 'text/html');
-
-    // Filter out demo disclaimer
-    const allP = doc.querySelectorAll('p');
-    allP.forEach(p => {
-      if (p.textContent.toLowerCase().includes('this is a demonstration store')) {
-        p.remove();
-      }
+  dots.forEach((dot, idx) => {
+    dot.addEventListener('click', (e) => {
+      e.preventDefault();
+      slider.scrollTo({ left: idx * getSlideWidth(), behavior: 'smooth' });
+      updateActiveSlide(idx);
     });
+  });
 
-    const headings = doc.querySelectorAll('h2, h3, h4, h5, h6');
-    if (headings.length > 0) {
-      const tab1Fragment = document.createDocumentFragment();
-      const tab2Fragment = document.createDocumentFragment();
-      const tab3Fragment = document.createDocumentFragment();
+  // Enable smooth cursor (mouse) drag-to-slide on mobile viewport
+  let isDown = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+  let wasDragged = false;
 
-      let targetFrag = tab1Fragment;
+  slider.addEventListener('dragstart', (e) => e.preventDefault());
 
-      Array.from(doc.body.childNodes).forEach(node => {
-        if (node.nodeType === Node.ELEMENT_NODE && /^H[2-6]$/.test(node.tagName)) {
-          const title = node.textContent.toLowerCase();
-          if (/garansi|warranty|return|jaminan|kebijakan|refund|bebas risiko/.test(title)) {
-            targetFrag = tab3Fragment;
-          } else if (/spesifikasi|material|specs|bahan|ukuran|dimensi|berat|weight|ingredients|komposisi|size/.test(title)) {
-            targetFrag = tab2Fragment;
-          } else {
-            targetFrag = tab1Fragment;
-          }
-        } else {
-          targetFrag.appendChild(node.cloneNode(true));
-        }
-      });
+  slider.addEventListener('mousedown', (e) => {
+    if (e.button !== 0 || window.innerWidth >= 750) return;
+    isDown = true;
+    wasDragged = false;
+    startX = e.pageX;
+    startScrollLeft = slider.scrollLeft;
+    slider.classList.add('is-dragging');
+  });
 
-      if (tab1Fragment.childNodes.length > 0) {
-        tab1Body.innerHTML = '';
-        tab1Body.appendChild(tab1Fragment);
-      }
-      if (tab2Fragment.childNodes.length > 0) {
-        tab2Body.innerHTML = '';
-        tab2Body.appendChild(tab2Fragment);
-      }
-      if (tab3Fragment.childNodes.length > 0 && tab3Body) {
-        tab3Body.innerHTML = '';
-        tab3Body.appendChild(tab3Fragment);
-      }
-    } else {
-      const specLabelRegex = /(spesifikasi|material|specs|dimensi|ukuran|berat|kapasitas|diameter|bahan|komposisi|nutrition|netto|net wt|volume):/i;
-      const specUnitRegex = /\d+(\.\d+)?\s*(oz|ml|gram|g|kg|cm|mm|inch|liter|l|pcs)\b/i;
-      const specKeywords = /\b(pack size|bottle pack|net weight|made in|non-toxic|ptfe|pfoa|die-cast|diameter)\b/i;
-      const warrantyRegex = /\b(garansi|warranty|return|refund|jaminan|100 hari|kebijakan|bebas risiko)\b/i;
-
-      const tab1Frag = document.createDocumentFragment();
-      const tab2Frag = document.createDocumentFragment();
-      const tab3Frag = document.createDocumentFragment();
-
-      Array.from(doc.body.children).forEach(el => {
-        const text = el.textContent.trim();
-        if (!text) return;
-
-        if (warrantyRegex.test(text)) {
-          tab3Frag.appendChild(el.cloneNode(true));
-        } else if (
-          el.tagName === 'UL' ||
-          el.tagName === 'OL' ||
-          el.tagName === 'TABLE' ||
-          specLabelRegex.test(text) ||
-          (text.length < 120 && specUnitRegex.test(text)) ||
-          (text.length < 100 && specKeywords.test(text))
-        ) {
-          tab2Frag.appendChild(el.cloneNode(true));
-        } else {
-          tab1Frag.appendChild(el.cloneNode(true));
-        }
-      });
-
-      if (tab1Frag.childNodes.length > 0) {
-        tab1Body.innerHTML = '';
-        tab1Body.appendChild(tab1Frag);
-      }
-      if (tab2Frag.childNodes.length > 0) {
-        tab2Body.innerHTML = '';
-        tab2Body.appendChild(tab2Frag);
-      }
-      if (tab3Frag.childNodes.length > 0 && tab3Body) {
-        tab3Body.innerHTML = '';
-        tab3Body.appendChild(tab3Frag);
-      }
+  window.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    const dx = e.pageX - startX;
+    if (Math.abs(dx) > 5) {
+      wasDragged = true;
     }
-  } catch (e) {
-    console.error('Error in initSmartDescriptionParser:', e);
-  }
+    slider.scrollLeft = startScrollLeft - dx;
+  });
+
+  const finishDrag = () => {
+    if (!isDown) return;
+    isDown = false;
+    slider.classList.remove('is-dragging');
+
+    const slideWidth = getSlideWidth();
+    const startIdx = Math.round(startScrollLeft / slideWidth);
+    const delta = slider.scrollLeft - startScrollLeft;
+    let targetIdx = startIdx;
+
+    if (Math.abs(delta) > slideWidth * 0.15) {
+      targetIdx = delta > 0 ? startIdx + 1 : startIdx - 1;
+    }
+    targetIdx = Math.max(0, Math.min(targetIdx, slides.length - 1));
+
+    slider.scrollTo({ left: targetIdx * slideWidth, behavior: 'smooth' });
+    updateActiveSlide(targetIdx);
+
+    if (wasDragged) {
+      setTimeout(() => { wasDragged = false; }, 120);
+    }
+  };
+
+  window.addEventListener('mouseup', finishDrag);
+  slider.addEventListener('mouseleave', finishDrag);
+
+  // Prevent Dawn lightbox modal from opening accidentally right after dragging
+  slider.addEventListener('click', (e) => {
+    if (wasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 }
