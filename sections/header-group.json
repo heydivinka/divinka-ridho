@@ -91,61 +91,31 @@
       "blocks": {
         "shipping_bar_block": {
           "type": "shipping_bar",
-          "settings": {
-            "show_icon": true,
-            "celebration_text": "Selamat! Kamu mendapatkan Bebas Ongkir!",
-            "unlocked_badge": "Bebas Ongkir Aktif"
-          }
+          "settings": {}
         },
         "promo_banner_block": {
           "type": "promo_banner",
-          "settings": {
-            "text": "Hemat setiap Rp 1.100.000 dengan kupon",
-            "tag_label": "Dinikmati 100x"
-          }
+          "settings": {}
         },
         "cart_items_block": {
           "type": "cart_items",
-          "settings": {
-            "show_vendor": false,
-            "show_change_link": true
-          }
+          "settings": {}
         },
         "upsell_block": {
           "type": "upsell",
-          "settings": {
-            "heading": "LENGKAPI DAPURMU",
-            "subtitle": "Penawaran Eksklusif Keranjang",
-            "item_desc": "Koleksi serbaguna terbaik",
-            "button_label": "+ Tambah"
-          }
+          "settings": {}
         },
         "order_summary_block": {
           "type": "order_summary",
-          "settings": {
-            "show_shipping_row": true,
-            "button_label": "Lanjut ke Pembayaran",
-            "tax_note": "Termasuk PPN & asuransi pengiriman"
-          }
+          "settings": {}
         },
         "trust_badges_block": {
           "type": "trust_badges",
-          "settings": {
-            "badge_1": "Garansi Uji Coba 100 Hari",
-            "badge_2": "Cicilan 0% Tersedia",
-            "badge_3": "Bebas Ongkir Aktif"
-          }
+          "settings": {}
         },
         "empty_cart_block": {
           "type": "empty_cart",
-          "settings": {
-            "heading": "Keranjang Belanja Anda Kosong",
-            "description": "Sepertinya Anda belum menambahkan peralatan dapur favorit ke dalam keranjang. Temukan koleksi terbaik kami!",
-            "button_text": "Mulai Jelajahi Produk",
-            "recommendations_heading": "REKOMENDASI TERPOPULER",
-            "products_to_show": 3,
-            "help_text": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7"
-          }
+          "settings": {}
         }
       },
       "block_order": [
