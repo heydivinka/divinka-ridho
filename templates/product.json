@@ -56,27 +56,13 @@
         "description": {
           "type": "description",
           "settings": {
-            "show_included_items": true,
-            "included_title": "TERMASUK DALAM PEMBELIAN:",
-            "item_1": "Tutup Wajan Modular",
-            "item_2": "Spatula Kayu Beechwood",
-            "item_3": "Keranjang Steamer Stainless",
-            "item_4": "Spons Pembersih Khusus",
-            "item_5": "",
-            "item_6": "",
+            "show_included_box": true,
+            "open_first_accordion": true,
             "show_testimonial": true,
             "testimonial_initials": "AS",
             "testimonial_author": "Amanda S.",
             "testimonial_badge": "Pembeli Terverifikasi",
-            "testimonial_quote": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”",
-            "tab_1_title": "Deskripsi & Keunggulan (10-in-1)",
-            "tab_1_use_product_description": true,
-            "tab_1_open_by_default": true,
-            "tab_1_content": "<p>Wajan inovatif pengganti 10 peralatan masak tradisional Anda: menumis, menggoreng, merebus, mengukus, memanggang, menyajikan, hingga menyimpan makanan dengan tutup modular yang pas dan corong tuang anti-tumpah.</p>",
-            "tab_2_title": "Spesifikasi & Material Non-Toxic",
-            "tab_2_content": "<p>Dibuat dari aluminium die-cast berkualitas tinggi dengan konduksi panas merata dan lapisan keramik non-stick tanpa bahan kimia berbahaya (100% bebas PTFE, PFOA, Timbal, dan Cadmium).</p>",
-            "tab_3_title": "Garansi Uji Coba 100 Hari Bebas Risiko",
-            "tab_3_content": "<p>Coba langsung Always Pan di dapur Anda selama 100 hari. Jika Anda merasa wajan ini bukan yang terbaik untuk Anda, kembalikan kapan saja dan kami kembalikan dana Anda 100% tanpa ribet.</p>"
+            "testimonial_quote": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
           }
         },
         "share": {
@@ -84,11 +70,35 @@
           "settings": {
             "share_label": "Share"
           }
+        },
+        "rating": {
+          "type": "rating",
+          "settings": {
+            "rating_score": "4.9",
+            "review_count_text": "(2.418 Ulasan Terverifikasi)",
+            "review_link": "#reviews",
+            "use_metafield_if_available": false
+          }
+        },
+        "inventory": {
+          "type": "inventory",
+          "settings": {
+            "show_icon": true,
+            "urgency_prefix": "34 dibeli dalam 12 jam terakhir",
+            "show_inventory_quantity": true,
+            "stock_prefix": "Sisa",
+            "stock_suffix": "pcs di gudang",
+            "untracked_stock_text": "Ready stock di gudang",
+            "continue_selling_text": "Pre-order tersedia",
+            "sold_out_text": "Stok sedang habis di gudang"
+          }
         }
       },
       "block_order": [
         "vendor",
         "title",
+        "rating",
+        "inventory",
         "price",
         "variant_picker",
         "size_chart",

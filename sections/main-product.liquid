@@ -76,7 +76,6 @@
 
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <product-component view-event-payload="{{ product | standard_event_data: 'view', context: 'page' | escape }}">
-    {% render 'exp-mobile-header', product: product %}
     <div class="page-width">
       <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
         <div class="grid__item product__media-wrapper">
@@ -144,56 +143,7 @@
                     {%- endform -%}
                   </div>
                 {%- when 'inventory' -%}
-                  <p
-                    class="product__inventory{% if block.settings.text_style == 'uppercase' %} caption-with-letter-spacing{% elsif block.settings.text_style == 'subtitle' %} subtitle{% endif %}{% if product.selected_or_first_available_variant.inventory_management != 'shopify' %} visibility-hidden{% endif %}"
-                    {{ block.shopify_attributes }}
-                    id="Inventory-{{ section.id }}"
-                    role="status"
-                  >
-                    {%- if product.selected_or_first_available_variant.inventory_management == 'shopify' -%}
-                      {%- if product.selected_or_first_available_variant.inventory_quantity > 0 -%}
-                        {%- if product.selected_or_first_available_variant.inventory_quantity
-                            <= block.settings.inventory_threshold
-                        -%}
-                          <span class="svg-wrapper" style="color: rgb(238, 148, 65)">
-                            {{- 'icon-inventory-status.svg' | inline_asset_content -}}
-                          </span>
-                          {%- if block.settings.show_inventory_quantity -%}
-                            {{-
-                              'products.product.inventory_low_stock_show_count'
-                              | t: quantity: product.selected_or_first_available_variant.inventory_quantity
-                            -}}
-                          {%- else -%}
-                            {{- 'products.product.inventory_low_stock' | t -}}
-                          {%- endif -%}
-                        {%- else -%}
-                          <span class="svg-wrapper" style="color: rgb(62, 214, 96)">
-                            {{- 'icon-inventory-status.svg' | inline_asset_content -}}
-                          </span>
-                          {%- if block.settings.show_inventory_quantity -%}
-                            {{-
-                              'products.product.inventory_in_stock_show_count'
-                              | t: quantity: product.selected_or_first_available_variant.inventory_quantity
-                            -}}
-                          {%- else -%}
-                            {{- 'products.product.inventory_in_stock' | t -}}
-                          {%- endif -%}
-                        {%- endif -%}
-                      {%- else -%}
-                        {%- if product.selected_or_first_available_variant.inventory_policy == 'continue' -%}
-                          <span class="svg-wrapper" style="color: rgb(62, 214, 96)">
-                            {{- 'icon-inventory-status.svg' | inline_asset_content -}}
-                          </span>
-                          {{- 'products.product.inventory_out_of_stock_continue_selling' | t -}}
-                        {%- else -%}
-                          <span class="svg-wrapper" style="color: rgb(200, 200, 200)">
-                            {{- 'icon-inventory-status.svg' | inline_asset_content -}}
-                          </span>
-                          {{- 'products.product.inventory_out_of_stock' | t -}}
-                        {%- endif -%}
-                      {%- endif -%}
-                    {%- endif -%}
-                  </p>
+                  {% render 'exp-inventory-urgency', block: block, product: product, section: section %}
                 {%- when 'description' -%}
                   {% render 'exp-smart-description', block: block, product: product %}
                 {%- when 'sku' -%}
@@ -500,55 +450,29 @@
                     show_pickup_availability: true
                   -%}
                 {%- when 'rating' -%}
-                  {%- if product.metafields.reviews.rating.value != blank -%}
-                    <div class="rating-wrapper">
-                      {% liquid
-                        assign rating_decimal = 0
-                        assign decimal = product.metafields.reviews.rating.value.rating | modulo: 1
-                        if decimal >= 0.3 and decimal <= 0.7
-                          assign rating_decimal = 0.5
-                        elsif decimal > 0.7
-                          assign rating_decimal = 1
-                        endif
-                      %}
-                      <div
-                        class="rating"
-                        role="img"
-                        aria-label="{{ 'accessibility.star_reviews_info' | t: rating_value: product.metafields.reviews.rating.value, rating_max: product.metafields.reviews.rating.value.scale_max }}"
-                      >
-                        <span
-                          aria-hidden="true"
-                          class="rating-star"
-                          style="--rating: {{ product.metafields.reviews.rating.value.rating | floor }}; --rating-max: {{ product.metafields.reviews.rating.value.scale_max }}; --rating-decimal: {{ rating_decimal }};"
-                        ></span>
-                      </div>
-                      <p class="rating-text caption">
-                        <span aria-hidden="true">
-                          {{- product.metafields.reviews.rating.value }} /
-                          {{ product.metafields.reviews.rating.value.scale_max -}}
-                        </span>
-                      </p>
-                      <p class="rating-count caption">
-                        <span aria-hidden="true">({{ product.metafields.reviews.rating_count }})</span>
-                        <span class="visually-hidden">
-                          {{- product.metafields.reviews.rating_count }}
-                          {{ 'accessibility.total_reviews' | t -}}
-                        </span>
-                      </p>
-                    </div>
-                  {%- else -%}
-                    <div class="exp-rating-summary" {{ block.shopify_attributes }}>
-                      <span class="exp-stars" aria-label="4.9 out of 5 stars">
-                        {%- for i in (1..5) -%}
-                          <svg viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                          </svg>
-                        {%- endfor -%}
-                      </span>
-                      <span class="exp-rating-score">4.9</span>
-                      <a href="#reviews" class="exp-rating-count">(2.418 Ulasan Terverifikasi)</a>
-                    </div>
-                  {%- endif -%}
+                  {%- liquid
+                    assign display_rating = block.settings.rating_score | default: '4.9'
+                    assign display_count = block.settings.review_count_text | default: '(2.418 Ulasan Terverifikasi)'
+                    assign review_href = block.settings.review_link | default: '#reviews'
+
+                    if block.settings.use_metafield_if_available and product.metafields.reviews.rating.value != blank
+                      assign display_rating = product.metafields.reviews.rating.value.rating | round: 1
+                      if product.metafields.reviews.rating_count != blank
+                        assign display_count = '(' | append: product.metafields.reviews.rating_count | append: ' Ulasan Terverifikasi)'
+                      endif
+                    endif
+                  -%}
+                  <div class="exp-rating-summary" {{ block.shopify_attributes }}>
+                    <span class="exp-stars" aria-label="{{ display_rating }} out of 5 stars">
+                      {%- for i in (1..5) -%}
+                        <svg viewBox="0 0 20 20" aria-hidden="true">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                      {%- endfor -%}
+                    </span>
+                    <span class="exp-rating-score">{{ display_rating | escape }}</span>
+                    <a href="{{ review_href }}" class="exp-rating-count">{{ display_count | escape }}</a>
+                  </div>
                 {%- when 'complementary' -%}
                   <product-recommendations
                     class="complementary-products quick-add-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}{% if block.settings.enable_quick_add %} complementary-products-contains-quick-add{% endif %}"
@@ -777,7 +701,9 @@
       </script>
     </div>
   </product-component>
-  {% render 'exp-sticky-atc', product: product %}
+  {%- if section.settings.enable_sticky_atc != false -%}
+    {% render 'exp-sticky-atc', product: product, section: section %}
+  {%- endif -%}
   {% render 'exp-360-modal', product: product %}
 </product-info>
 
@@ -865,39 +791,52 @@
       "limit": 1,
       "settings": [
         {
-          "type": "select",
-          "id": "text_style",
-          "options": [
-            {
-              "value": "body",
-              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__1.label"
-            },
-            {
-              "value": "subtitle",
-              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__2.label"
-            },
-            {
-              "value": "uppercase",
-              "label": "t:sections.main-product.blocks.inventory.settings.text_style.options__3.label"
-            }
-          ],
-          "default": "body",
-          "label": "t:sections.main-product.blocks.inventory.settings.text_style.label"
+          "type": "checkbox",
+          "id": "show_icon",
+          "label": "Tampilkan Ikon Api",
+          "default": true
         },
         {
-          "type": "range",
-          "id": "inventory_threshold",
-          "label": "t:sections.main-product.blocks.inventory.settings.inventory_threshold.label",
-          "min": 0,
-          "max": 100,
-          "step": 1,
-          "default": 10
+          "type": "text",
+          "id": "urgency_prefix",
+          "label": "Teks Urgency (Kiri)",
+          "default": "34 dibeli dalam 12 jam terakhir"
         },
         {
           "type": "checkbox",
           "id": "show_inventory_quantity",
-          "label": "t:sections.main-product.blocks.inventory.settings.show_inventory_quantity.label",
+          "label": "Tampilkan Jumlah Stok Dinamis",
           "default": true
+        },
+        {
+          "type": "text",
+          "id": "stock_prefix",
+          "label": "Awalan Teks Stok",
+          "default": "Sisa"
+        },
+        {
+          "type": "text",
+          "id": "stock_suffix",
+          "label": "Akhiran Teks Stok",
+          "default": "pcs di gudang"
+        },
+        {
+          "type": "text",
+          "id": "untracked_stock_text",
+          "label": "Teks Jika Stok Tidak Dilacak",
+          "default": "Ready stock di gudang"
+        },
+        {
+          "type": "text",
+          "id": "continue_selling_text",
+          "label": "Teks Jika Pre-order / Continue",
+          "default": "Pre-order tersedia"
+        },
+        {
+          "type": "text",
+          "id": "sold_out_text",
+          "label": "Teks Jika Stok Habis (0)",
+          "default": "Stok sedang habis di gudang"
         }
       ]
     },
@@ -976,143 +915,60 @@
       "name": "t:sections.main-product.blocks.description.name",
       "limit": 1,
       "settings": [
-              {
-                      "type": "header",
-                      "content": "1. Termasuk Dalam Pembelian"
-              },
-              {
-                      "type": "checkbox",
-                      "id": "show_included_items",
-                      "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
-                      "default": true
-              },
-              {
-                      "type": "text",
-                      "id": "included_title",
-                      "label": "Judul Box",
-                      "default": "TERMASUK DALAM PEMBELIAN:"
-              },
-              {
-                      "type": "text",
-                      "id": "item_1",
-                      "label": "Item 1",
-                      "default": "Tutup Wajan Modular"
-              },
-              {
-                      "type": "text",
-                      "id": "item_2",
-                      "label": "Item 2",
-                      "default": "Spatula Kayu Beechwood"
-              },
-              {
-                      "type": "text",
-                      "id": "item_3",
-                      "label": "Item 3",
-                      "default": "Keranjang Steamer Stainless"
-              },
-              {
-                      "type": "text",
-                      "id": "item_4",
-                      "label": "Item 4",
-                      "default": "Spons Pembersih Khusus"
-              },
-              {
-                      "type": "text",
-                      "id": "item_5",
-                      "label": "Item 5"
-              },
-              {
-                      "type": "text",
-                      "id": "item_6",
-                      "label": "Item 6"
-              },
-              {
-                      "type": "header",
-                      "content": "2. Komentar Pembeli Terverifikasi"
-              },
-              {
-                      "type": "checkbox",
-                      "id": "show_testimonial",
-                      "label": "Tampilkan Komentar Pembeli Terverifikasi",
-                      "default": true
-              },
-              {
-                      "type": "text",
-                      "id": "testimonial_initials",
-                      "label": "Inisial Avatar",
-                      "default": "AS"
-              },
-              {
-                      "type": "text",
-                      "id": "testimonial_author",
-                      "label": "Nama Pembeli",
-                      "default": "Amanda S."
-              },
-              {
-                      "type": "text",
-                      "id": "testimonial_badge",
-                      "label": "Teks Badge Verifikasi",
-                      "default": "Pembeli Terverifikasi"
-              },
-              {
-                      "type": "textarea",
-                      "id": "testimonial_quote",
-                      "label": "Kutipan Ulasan",
-                      "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
-              },
-              {
-                      "type": "header",
-                      "content": "3. Smart Description Accordions"
-              },
-              {
-                      "type": "paragraph",
-                      "content": "Tab 1 otomatis mengambil dari Deskripsi Produk."
-              },
-              {
-                      "type": "text",
-                      "id": "tab_1_title",
-                      "label": "Judul Tab 1",
-                      "default": "Deskripsi & Keunggulan (10-in-1)"
-              },
-              {
-                      "type": "checkbox",
-                      "id": "tab_1_use_product_description",
-                      "label": "Ambil Otomatis Dari Product Description",
-                      "default": true
-              },
-              {
-                      "type": "checkbox",
-                      "id": "tab_1_open_by_default",
-                      "label": "Tab 1 Langsung Terbuka",
-                      "default": true
-              },
-              {
-                      "type": "richtext",
-                      "id": "tab_1_content",
-                      "label": "Konten Kustom Tab 1 (Fallback jika kosong)"
-              },
-              {
-                      "type": "text",
-                      "id": "tab_2_title",
-                      "label": "Judul Tab 2",
-                      "default": "Spesifikasi & Material Non-Toxic"
-              },
-              {
-                      "type": "richtext",
-                      "id": "tab_2_content",
-                      "label": "Konten Tab 2"
-              },
-              {
-                      "type": "text",
-                      "id": "tab_3_title",
-                      "label": "Judul Tab 3",
-                      "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
-              },
-              {
-                      "type": "richtext",
-                      "id": "tab_3_content",
-                      "label": "Konten Tab 3"
-              }
+        {
+          "type": "header",
+          "content": "1. Smart Description (Dinamis)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Box checklist (Heading 'Termasuk/Kelengkapan' + bullet list) dan semua tab accordion (Heading H2/H3 lainnya) diproses 100% otomatis dari Description produk di Shopify Admin."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_included_box",
+          "label": "Tampilkan Box Checklist Pembelian",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "open_first_accordion",
+          "label": "Buka Tab Accordion Pertama Secara Default",
+          "default": true
+        },
+        {
+          "type": "header",
+          "content": "2. Komentar Pembeli Terverifikasi"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_testimonial",
+          "label": "Tampilkan Komentar Pembeli Terverifikasi",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "testimonial_initials",
+          "label": "Inisial Avatar",
+          "default": "AS"
+        },
+        {
+          "type": "text",
+          "id": "testimonial_author",
+          "label": "Nama Pembeli",
+          "default": "Amanda S."
+        },
+        {
+          "type": "text",
+          "id": "testimonial_badge",
+          "label": "Teks Badge Verifikasi",
+          "default": "Pembeli Terverifikasi"
+        },
+        {
+          "type": "textarea",
+          "id": "testimonial_quote",
+          "label": "Kutipan Ulasan",
+          "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
+        }
       ]
     },
     {
@@ -1412,8 +1268,28 @@
       "limit": 1,
       "settings": [
         {
-          "type": "paragraph",
-          "content": "t:sections.main-product.blocks.rating.settings.paragraph.content"
+          "type": "text",
+          "id": "rating_score",
+          "label": "Skor Rating",
+          "default": "4.9"
+        },
+        {
+          "type": "text",
+          "id": "review_count_text",
+          "label": "Teks Jumlah Ulasan",
+          "default": "(2.418 Ulasan Terverifikasi)"
+        },
+        {
+          "type": "text",
+          "id": "review_link",
+          "label": "Link Ulasan",
+          "default": "#reviews"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_metafield_if_available",
+          "label": "Gunakan Metafield Reviews Jika Ada",
+          "default": false
         }
       ]
     },
@@ -2551,53 +2427,23 @@
       "settings": [
         {
           "type": "header",
-          "content": "1. Termasuk Dalam Pembelian"
+          "content": "1. Smart Description (Dinamis)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Box checklist (Heading 'Termasuk/Kelengkapan' + bullet list) dan semua tab accordion (Heading H2/H3 lainnya) diproses 100% otomatis dari Description produk di Shopify Admin."
         },
         {
           "type": "checkbox",
-          "id": "show_included_items",
-          "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
+          "id": "show_included_box",
+          "label": "Tampilkan Box Checklist Pembelian",
           "default": true
         },
         {
-          "type": "text",
-          "id": "included_title",
-          "label": "Judul Box",
-          "default": "TERMASUK DALAM PEMBELIAN:"
-        },
-        {
-          "type": "text",
-          "id": "item_1",
-          "label": "Item 1",
-          "default": "Tutup Wajan Modular"
-        },
-        {
-          "type": "text",
-          "id": "item_2",
-          "label": "Item 2",
-          "default": "Spatula Kayu Beechwood"
-        },
-        {
-          "type": "text",
-          "id": "item_3",
-          "label": "Item 3",
-          "default": "Keranjang Steamer Stainless"
-        },
-        {
-          "type": "text",
-          "id": "item_4",
-          "label": "Item 4",
-          "default": "Spons Pembersih Khusus"
-        },
-        {
-          "type": "text",
-          "id": "item_5",
-          "label": "Item 5"
-        },
-        {
-          "type": "text",
-          "id": "item_6",
-          "label": "Item 6"
+          "type": "checkbox",
+          "id": "open_first_accordion",
+          "label": "Buka Tab Accordion Pertama Secara Default",
+          "default": true
         },
         {
           "type": "header",
@@ -2632,59 +2478,6 @@
           "id": "testimonial_quote",
           "label": "Kutipan Ulasan",
           "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
-        },
-        {
-          "type": "header",
-          "content": "3. Smart Description Accordions"
-        },
-        {
-          "type": "paragraph",
-          "content": "Tab 1 otomatis mengambil konten dari Deskripsi Produk (product.description)."
-        },
-        {
-          "type": "text",
-          "id": "tab_1_title",
-          "label": "Judul Tab 1",
-          "default": "Deskripsi & Keunggulan (10-in-1)"
-        },
-        {
-          "type": "checkbox",
-          "id": "tab_1_use_product_description",
-          "label": "Ambil Otomatis Dari Product Description",
-          "default": true
-        },
-        {
-          "type": "checkbox",
-          "id": "tab_1_open_by_default",
-          "label": "Tab 1 Langsung Terbuka",
-          "default": true
-        },
-        {
-          "type": "richtext",
-          "id": "tab_1_content",
-          "label": "Konten Kustom Tab 1 (Fallback jika deskripsi kosong)"
-        },
-        {
-          "type": "text",
-          "id": "tab_2_title",
-          "label": "Judul Tab 2",
-          "default": "Spesifikasi & Material Non-Toxic"
-        },
-        {
-          "type": "richtext",
-          "id": "tab_2_content",
-          "label": "Konten Tab 2"
-        },
-        {
-          "type": "text",
-          "id": "tab_3_title",
-          "label": "Judul Tab 3",
-          "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
-        },
-        {
-          "type": "richtext",
-          "id": "tab_3_content",
-          "label": "Konten Tab 3"
         }
       ]
     }
@@ -2863,6 +2656,44 @@
       "unit": "px",
       "label": "t:sections.all.padding.padding_bottom",
       "default": 36
+    },
+    {
+      "type": "header",
+      "content": "EXP Sticky Add to Cart Bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_atc",
+      "label": "Aktifkan Sticky Add to Cart Bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_atc_desktop_full_width",
+      "label": "Lebar Penuh (100%) di Desktop",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "sticky_atc_desktop_width",
+      "min": 640,
+      "max": 1400,
+      "step": 20,
+      "unit": "px",
+      "label": "Lebar Sticky Bar di Desktop",
+      "default": 980
+    },
+    {
+      "type": "text",
+      "id": "sticky_atc_button_label",
+      "label": "Label Tombol Sticky ATC",
+      "default": "Tambah ke Keranjang"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky_atc_show_trust_badges",
+      "label": "Tampilkan Trust Badges di Sticky Bar",
+      "default": true
     }
   ]
 }

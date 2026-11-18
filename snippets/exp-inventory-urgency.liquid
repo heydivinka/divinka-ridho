@@ -1,0 +1,75 @@
+{% comment %}
+  Renders the dynamic Inventory Stock & Urgency Banner inside Dawn's native `inventory` block.
+  Keeps id="Inventory-{{ section.id }}" so Dawn's ProductInfo live-updates stock count on variant change!
+
+  Accepts:
+  - product: {Object} Product Liquid object
+  - block: {Object} Block object with editable schema settings
+  - section: {Object} Section object
+{% endcomment %}
+
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign inv_qty = current_variant.inventory_quantity | default: 0
+  assign inv_tracked = false
+  if current_variant.inventory_management == 'shopify'
+    assign inv_tracked = true
+  endif
+
+  assign show_icon = block.settings.show_icon
+  if show_icon == nil
+    assign show_icon = true
+  endif
+
+  assign urgency_prefix = block.settings.urgency_prefix | default: '34 dibeli dalam 12 jam terakhir'
+  assign stock_prefix = block.settings.stock_prefix | default: 'Sisa'
+  assign stock_suffix = block.settings.stock_suffix | default: 'pcs di gudang'
+  assign untracked_stock_text = block.settings.untracked_stock_text | default: 'Ready stock di gudang'
+  assign continue_selling_text = block.settings.continue_selling_text | default: 'Pre-order tersedia'
+  assign sold_out_text = block.settings.sold_out_text | default: 'Stok sedang habis di gudang'
+
+  assign is_sold_out = false
+  if inv_tracked and inv_qty <= 0 and current_variant.inventory_policy != 'continue'
+    assign is_sold_out = true
+  elsif inv_tracked == false and current_variant.available == false
+    assign is_sold_out = true
+  endif
+-%}
+
+<div
+  class="exp-urgency-banner{% if is_sold_out %} exp-urgency-banner--soldout{% endif %}"
+  id="Inventory-{{ section.id }}"
+  role="status"
+  {{ block.shopify_attributes }}
+>
+  {%- if is_sold_out -%}
+    <span class="exp-urgency-banner__content">
+      <strong class="exp-urgency-banner__stock">{{ sold_out_text | escape }}</strong>
+    </span>
+  {%- else -%}
+    {%- if show_icon -%}
+      <span class="exp-urgency-banner__fire" aria-hidden="true">🔥</span>
+    {%- endif -%}
+    <span class="exp-urgency-banner__content">
+      {%- if urgency_prefix != blank -%}
+        <span class="exp-urgency-banner__highlight">{{ urgency_prefix | escape }}</span>
+        <span class="exp-urgency-banner__sep" aria-hidden="true"> — </span>
+      {%- endif -%}
+      <strong class="exp-urgency-banner__stock">
+        {%- if inv_tracked -%}
+          {%- if inv_qty > 0 -%}
+            {%- if block.settings.show_inventory_quantity != false -%}
+              {{ stock_prefix | escape }} {{ inv_qty }} {{ stock_suffix | escape }}
+            {%- else -%}
+              {{ untracked_stock_text | escape }}
+            {%- endif -%}
+          {%- else -%}
+            {{ continue_selling_text | escape }}
+          {%- endif -%}
+        {%- else -%}
+          {{ untracked_stock_text | escape }}
+        {%- endif -%}
+      </strong>
+    </span>
+  {%- endif -%}
+</div>
