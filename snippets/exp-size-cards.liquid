@@ -1,38 +1,61 @@
 {% comment %}
   Renders the custom Size Cards variant picker.
+  Fully data-driven from Shopify product options & compatible with Dawn's <variant-selects>.
   Accepts:
   - product: {Object} Product Liquid object
   - block: {Object} Block object with settings
-  - option: {Object} Option object if inside variant-selects loop
+  - option: {Object} Option object inside variant-selects loop
+  - product_form_id: {String} Product form ID
 {% endcomment %}
 
-{%- liquid
-  assign selected_size = 'STANDAR 28 CM'
-  if option != blank
+{%- if option != blank -%}
+  {%- liquid
+    assign form_id = product_form_id | default: 'product-form-' | append: section.id
     assign selected_size = option.selected_value | upcase
-  endif
--%}
+  -%}
 
-<div class="exp-size-section" {{ block.shopify_attributes }}>
-  <div class="exp-size-label-row">
-    <span class="exp-size-label">
-      Pilihan Ukuran: <span class="exp-size-selected-name">{{ selected_size }}</span>
-    </span>
-    <span class="exp-stock-badge">Ready Stock</span>
-  </div>
+  <fieldset class="js product-form__input exp-size-section" {{ block.shopify_attributes }}>
+    <legend class="visually-hidden">{{ option.name | escape }}</legend>
+    <div class="exp-size-label-row">
+      <span class="exp-size-label">
+        {{ option.name }}: <span class="exp-size-selected-name" data-selected-value>{{ selected_size }}</span>
+      </span>
+      {%- if product.selected_or_first_available_variant.available -%}
+        <span class="exp-stock-badge">Ready Stock</span>
+      {%- else -%}
+        <span class="exp-stock-badge" style="background-color:#fee2e2;color:#b91c1c;">Stok Habis</span>
+      {%- endif -%}
+    </div>
 
-  <div class="exp-size-cards-grid">
-    {%- if option != blank -%}
+    <div class="exp-size-cards-grid">
       {%- for value in option.values -%}
-        {%- assign val_lower = value | downcase -%}
-        <label class="exp-size-card">
+        {%- liquid
+          assign val_lower = value | downcase
+          assign escaped_value = value | escape
+          assign option_disabled = true
+          if value.available
+            assign option_disabled = false
+          endif
+        -%}
+        {%- capture input_id -%}
+          {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+        {%- endcapture -%}
+        {%- capture input_name -%}
+          {{ option.name }}-{{ option.position }}
+        {%- endcapture -%}
+
+        <label class="exp-size-card{% if option_disabled %} exp-size-card--unavailable{% endif %}" for="{{ input_id }}">
           <input
             type="radio"
-            name="{{ option.name | escape }}"
-            value="{{ value | escape }}"
-            form="product-form-{{ section.id }}"
+            id="{{ input_id }}"
+            name="{{ input_name | escape }}"
+            value="{{ escaped_value }}"
+            form="{{ form_id }}"
+            data-product-url="{{ value.product_url }}"
             data-option-value-id="{{ value.id }}"
-            {% if option.selected_value == value %}checked{% endif %}
+            data-option-name="{{ option.name | escape }}"
+            {% if value.selected %}checked{% endif %}
+            {% if option_disabled %}class="disabled"{% endif %}
           >
           <div class="exp-size-card__box">
             <span class="exp-size-card__title">{{ value }}</span>
@@ -57,32 +80,6 @@
           </div>
         </label>
       {%- endfor -%}
-    {%- else -%}
-      <!-- Default mockup size cards -->
-      <label class="exp-size-card">
-        <input type="radio" name="size-mockup" value="Mini 21cm">
-        <div class="exp-size-card__box">
-          <span class="exp-size-card__title">Mini 21cm</span>
-          <span class="exp-size-card__subtitle">1–2 Porsi</span>
-        </div>
-      </label>
-
-      <label class="exp-size-card">
-        <input type="radio" name="size-mockup" value="Standar 28cm" checked>
-        <div class="exp-size-card__box">
-          <span class="exp-size-card__title">Standar 28cm</span>
-          <span class="exp-size-card__subtitle">3–4 Porsi</span>
-          <span class="exp-size-card__tag">(Favorit)</span>
-        </div>
-      </label>
-
-      <label class="exp-size-card">
-        <input type="radio" name="size-mockup" value="Family 32cm">
-        <div class="exp-size-card__box">
-          <span class="exp-size-card__title">Family 32cm</span>
-          <span class="exp-size-card__subtitle">5–7 Porsi</span>
-        </div>
-      </label>
-    {%- endif -%}
-  </div>
-</div>
+    </div>
+  </fieldset>
+{%- endif -%}

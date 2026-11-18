@@ -1,64 +1,78 @@
 {% comment %}
   Renders the custom Color Swatches variant picker.
+  Fully data-driven from Shopify product options & compatible with Dawn's <variant-selects>.
   Accepts:
   - product: {Object} Product Liquid object
   - block: {Object} Block object with settings
-  - option: {Object} Option object if inside variant-selects loop
+  - option: {Object} Option object inside variant-selects loop
+  - product_form_id: {String} Product form ID
 {% endcomment %}
 
-{%- liquid
-  assign selected_color = 'SPICE (TERRACOTTA)'
-  if option != blank
+{%- if option != blank -%}
+  {%- liquid
+    assign form_id = product_form_id | default: 'product-form-' | append: section.id
     assign selected_color = option.selected_value | upcase
-  endif
--%}
+  -%}
 
-<div class="exp-color-section" {{ block.shopify_attributes }}>
-  <div class="exp-color-label-row">
-    <span class="exp-color-label">
-      Pilihan Warna: <span class="exp-color-selected-name">{{ selected_color }}</span>
-    </span>
-    <span class="exp-color-tag">— TERLARIS</span>
-  </div>
+  <fieldset class="js product-form__input exp-color-section" {{ block.shopify_attributes }}>
+    <legend class="visually-hidden">{{ option.name | escape }}</legend>
+    <div class="exp-color-label-row">
+      <span class="exp-color-label">
+        {{ option.name }}: <span class="exp-color-selected-name" data-selected-value>{{ selected_color }}</span>
+      </span>
+      <span class="exp-color-tag">— TERLARIS</span>
+    </div>
 
-  <div class="exp-swatches-grid">
-    {%- if option != blank -%}
+    <div class="exp-swatches-grid">
       {%- for value in option.values -%}
-        {%- assign val_lower = value | downcase -%}
-        <label class="exp-swatch-item" title="{{ value | escape }}">
+        {%- liquid
+          assign val_lower = value | downcase
+          assign escaped_value = value | escape
+          assign option_disabled = true
+          if value.available
+            assign option_disabled = false
+          endif
+
+          assign swatch_style = ''
+          if value.swatch.image
+            assign swatch_img_url = value.swatch.image | image_url: width: 80
+            assign swatch_style = 'background-image: url(' | append: swatch_img_url | append: '); background-size: cover; background-position: center;'
+          elsif value.swatch.color
+            assign swatch_style = 'background-color: rgb(' | append: value.swatch.color.rgb | append: ');'
+          endif
+        -%}
+        {%- capture input_id -%}
+          {{ section.id }}-{{ option.position }}-{{ forloop.index0 -}}
+        {%- endcapture -%}
+        {%- capture input_name -%}
+          {{ option.name }}-{{ option.position }}
+        {%- endcapture -%}
+
+        <label
+          class="exp-swatch-item{% if option_disabled %} exp-swatch-item--unavailable{% endif %}"
+          title="{{ escaped_value }}"
+          for="{{ input_id }}"
+        >
           <input
             type="radio"
-            name="{{ option.name | escape }}"
-            value="{{ value | escape }}"
-            form="product-form-{{ section.id }}"
+            id="{{ input_id }}"
+            name="{{ input_name | escape }}"
+            value="{{ escaped_value }}"
+            form="{{ form_id }}"
+            data-product-url="{{ value.product_url }}"
             data-option-value-id="{{ value.id }}"
-            {% if option.selected_value == value %}checked{% endif %}
+            data-option-name="{{ option.name | escape }}"
+            {% if value.selected %}checked{% endif %}
+            {% if option_disabled %}class="disabled"{% endif %}
           >
-          <span class="exp-swatch-circle" data-color="{{ val_lower }}" aria-hidden="true"></span>
+          <span
+            class="exp-swatch-circle"
+            data-color="{{ val_lower }}"
+            {% if swatch_style != blank %}style="{{ swatch_style }}"{% endif %}
+            aria-hidden="true"
+          ></span>
         </label>
       {%- endfor -%}
-    {%- else -%}
-      <!-- Default mockup colors -->
-      <label class="exp-swatch-item" title="Spice (Terracotta)">
-        <input type="radio" name="color-mockup" value="Spice (Terracotta)" checked>
-        <span class="exp-swatch-circle" data-color="spice" style="background-color: #c85a38;"></span>
-      </label>
-      <label class="exp-swatch-item" title="Steam (Oat)">
-        <input type="radio" name="color-mockup" value="Steam (Oat)">
-        <span class="exp-swatch-circle" data-color="steam" style="background-color: #e8e1d5;"></span>
-      </label>
-      <label class="exp-swatch-item" title="Charcoal (Black)">
-        <input type="radio" name="color-mockup" value="Charcoal (Black)">
-        <span class="exp-swatch-circle" data-color="charcoal" style="background-color: #2d3134;"></span>
-      </label>
-      <label class="exp-swatch-item" title="Sage (Green)">
-        <input type="radio" name="color-mockup" value="Sage (Green)">
-        <span class="exp-swatch-circle" data-color="sage" style="background-color: #8f9c84;"></span>
-      </label>
-      <label class="exp-swatch-item" title="Lavender (Lilac)">
-        <input type="radio" name="color-mockup" value="Lavender (Lilac)">
-        <span class="exp-swatch-circle" data-color="lavender" style="background-color: #b5a8c2;"></span>
-      </label>
-    {%- endif -%}
-  </div>
-</div>
+    </div>
+  </fieldset>
+{%- endif -%}
