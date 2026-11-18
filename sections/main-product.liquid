@@ -451,7 +451,10 @@
                   -%}
                 {%- when 'rating' -%}
                   {%- liquid
-                    assign display_rating = block.settings.rating_score | default: '4.9'
+                    assign display_rating = block.settings.rating_score | strip
+                    if display_rating == blank
+                      assign display_rating = '4.9'
+                    endif
                     assign display_count = block.settings.review_count_text | default: '(2.418 Ulasan Terverifikasi)'
                     assign review_href = block.settings.review_link | default: '#reviews'
 
@@ -461,13 +464,40 @@
                         assign display_count = '(' | append: product.metafields.reviews.rating_count | append: ' Ulasan Terverifikasi)'
                       endif
                     endif
+
+                    assign rating_normalized = display_rating | append: '' | strip | replace: ',', '.' | plus: 0.0
+                    if rating_normalized < 0
+                      assign rating_normalized = 0.0
+                    elsif rating_normalized > 5
+                      assign rating_normalized = 5.0
+                    endif
                   -%}
                   <div class="exp-rating-summary" {{ block.shopify_attributes }}>
-                    <span class="exp-stars" aria-label="{{ display_rating }} out of 5 stars">
+                    <span class="exp-stars" aria-label="{{ rating_normalized }} out of 5 stars">
                       {%- for i in (1..5) -%}
-                        <svg viewBox="0 0 20 20" aria-hidden="true">
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                        </svg>
+                        {%- liquid
+                          assign star_floor = i | minus: 1
+                          assign star_diff = rating_normalized | minus: star_floor
+                          if star_diff >= 1
+                            assign star_fill_pct = 100
+                          elsif star_diff <= 0
+                            assign star_fill_pct = 0
+                          else
+                            assign star_fill_pct = star_diff | times: 100 | round
+                          endif
+                        -%}
+                        <span class="exp-star" aria-hidden="true">
+                          <svg class="exp-star__bg" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                          </svg>
+                          {%- if star_fill_pct > 0 -%}
+                            <span class="exp-star__fill" style="width: {{ star_fill_pct }}%;">
+                              <svg viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                              </svg>
+                            </span>
+                          {%- endif -%}
+                        </span>
                       {%- endfor -%}
                     </span>
                     <span class="exp-rating-score">{{ display_rating | escape }}</span>
@@ -1271,6 +1301,7 @@
           "type": "text",
           "id": "rating_score",
           "label": "Skor Rating",
+          "info": "Angka 0–5 (contoh: 4.9, 4.5, 3, atau 3,5). Bintang otomatis menyesuaikan.",
           "default": "4.9"
         },
         {

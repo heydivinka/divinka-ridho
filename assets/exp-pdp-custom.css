@@ -401,6 +401,38 @@
   display: block;
 }
 
+.exp-star {
+  position: relative;
+  display: inline-block;
+  width: var(--exp-star-size, 14px);
+  height: var(--exp-star-size, 14px);
+  flex-shrink: 0;
+}
+
+.exp-stars .exp-star__bg {
+  width: var(--exp-star-size, 14px);
+  height: var(--exp-star-size, 14px);
+  fill: #e5e7eb;
+  display: block;
+}
+
+.exp-star__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: var(--exp-star-size, 14px);
+  overflow: hidden;
+  display: block;
+}
+
+.exp-star__fill svg {
+  width: var(--exp-star-size, 14px);
+  height: var(--exp-star-size, 14px);
+  min-width: var(--exp-star-size, 14px);
+  fill: var(--exp-star-gold);
+  display: block;
+}
+
 .exp-rating-score {
   font-weight: 700;
   font-size: 13.5px;
@@ -2149,6 +2181,10 @@ fieldset.exp-size-section,
   align-items: center;
   gap: 5px;
   margin-top: 2px;
+}
+
+.exp-rel-card__rating .exp-stars {
+  --exp-star-size: 11px;
 }
 
 .exp-rel-card__rating .exp-stars svg {

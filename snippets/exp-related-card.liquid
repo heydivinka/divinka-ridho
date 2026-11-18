@@ -131,12 +131,40 @@
         {%- endif -%}
 
         {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}
+          {%- liquid
+            assign card_rating_val = card_product.metafields.reviews.rating.value.rating | plus: 0.0
+            if card_rating_val < 0
+              assign card_rating_val = 0.0
+            elsif card_rating_val > 5
+              assign card_rating_val = 5.0
+            endif
+          -%}
           <div class="exp-rel-card__rating">
             <span class="exp-stars" aria-hidden="true">
               {%- for i in (1..5) -%}
-                <svg viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
+                {%- liquid
+                  assign star_floor = i | minus: 1
+                  assign star_diff = card_rating_val | minus: star_floor
+                  if star_diff >= 1
+                    assign star_fill_pct = 100
+                  elsif star_diff <= 0
+                    assign star_fill_pct = 0
+                  else
+                    assign star_fill_pct = star_diff | times: 100 | round
+                  endif
+                -%}
+                <span class="exp-star">
+                  <svg class="exp-star__bg" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  {%- if star_fill_pct > 0 -%}
+                    <span class="exp-star__fill" style="width: {{ star_fill_pct }}%;">
+                      <svg viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    </span>
+                  {%- endif -%}
+                </span>
               {%- endfor -%}
             </span>
             <span class="exp-rel-card__rating-val">{{ card_product.metafields.reviews.rating.value.rating | round: 1 }}</span>
