@@ -57,53 +57,23 @@
     },
     {
       "type": "header",
-      "content": "1. Termasuk Dalam Pembelian (What's Included)"
+      "content": "1. Smart Description (Dinamis)"
+    },
+    {
+      "type": "paragraph",
+      "content": "Box checklist (Heading 'Termasuk/Kelengkapan' + bullet list) dan tab accordion (Heading H2/H3 lainnya) diproses 100% otomatis dari Description produk di Shopify Admin."
     },
     {
       "type": "checkbox",
-      "id": "show_included_items",
-      "label": "Tampilkan Box 'Termasuk Dalam Pembelian'",
+      "id": "show_included_box",
+      "label": "Tampilkan Box Checklist Pembelian",
       "default": true
     },
     {
-      "type": "text",
-      "id": "included_title",
-      "label": "Judul Box",
-      "default": "TERMASUK DALAM PEMBELIAN:"
-    },
-    {
-      "type": "text",
-      "id": "item_1",
-      "label": "Item 1",
-      "default": "Tutup Wajan Modular"
-    },
-    {
-      "type": "text",
-      "id": "item_2",
-      "label": "Item 2",
-      "default": "Spatula Kayu Beechwood"
-    },
-    {
-      "type": "text",
-      "id": "item_3",
-      "label": "Item 3",
-      "default": "Keranjang Steamer Stainless"
-    },
-    {
-      "type": "text",
-      "id": "item_4",
-      "label": "Item 4",
-      "default": "Spons Pembersih Khusus"
-    },
-    {
-      "type": "text",
-      "id": "item_5",
-      "label": "Item 5"
-    },
-    {
-      "type": "text",
-      "id": "item_6",
-      "label": "Item 6"
+      "type": "checkbox",
+      "id": "open_first_accordion",
+      "label": "Buka Tab Accordion Pertama Secara Default",
+      "default": true
     },
     {
       "type": "header",
@@ -138,59 +108,6 @@
       "id": "testimonial_quote",
       "label": "Kutipan Ulasan",
       "default": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
-    },
-    {
-      "type": "header",
-      "content": "3. Smart Description Accordions"
-    },
-    {
-      "type": "paragraph",
-      "content": "Tab 1 otomatis mengambil isi dari Deskripsi Produk (product.description) di Shopify Admin."
-    },
-    {
-      "type": "text",
-      "id": "tab_1_title",
-      "label": "Judul Tab 1",
-      "default": "Deskripsi & Keunggulan (10-in-1)"
-    },
-    {
-      "type": "checkbox",
-      "id": "tab_1_use_product_description",
-      "label": "Ambil Otomatis Dari Product Description",
-      "default": true
-    },
-    {
-      "type": "checkbox",
-      "id": "tab_1_open_by_default",
-      "label": "Tab 1 Langsung Terbuka (Default Open)",
-      "default": true
-    },
-    {
-      "type": "richtext",
-      "id": "tab_1_content",
-      "label": "Konten Kustom Tab 1 (Fallback jika deskripsi kosong)"
-    },
-    {
-      "type": "text",
-      "id": "tab_2_title",
-      "label": "Judul Tab 2",
-      "default": "Spesifikasi & Material Non-Toxic"
-    },
-    {
-      "type": "richtext",
-      "id": "tab_2_content",
-      "label": "Konten Tab 2"
-    },
-    {
-      "type": "text",
-      "id": "tab_3_title",
-      "label": "Judul Tab 3",
-      "default": "Garansi Uji Coba 100 Hari Bebas Risiko"
-    },
-    {
-      "type": "richtext",
-      "id": "tab_3_content",
-      "label": "Konten Tab 3"
     },
     {
       "type": "header",
@@ -247,12 +164,6 @@
           "id": "heading",
           "label": "Judul Tab",
           "default": "Informasi Tambahan"
-        },
-        {
-          "type": "checkbox",
-          "id": "use_product_description",
-          "label": "Ambil Dari Product Description",
-          "default": false
         },
         {
           "type": "richtext",
