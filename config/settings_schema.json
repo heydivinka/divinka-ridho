@@ -1572,6 +1572,22 @@
       },
       {
         "type": "header",
+        "content": "Tombol Pembayaran (Checkout CTA)"
+      },
+      {
+        "type": "text",
+        "id": "cart_checkout_button_text",
+        "label": "Teks Tombol Pembayaran / Checkout",
+        "default": "Lanjut ke Pembayaran"
+      },
+      {
+        "type": "text",
+        "id": "cart_tax_note",
+        "label": "Catatan Pajak & Pengiriman",
+        "default": "Termasuk PPN & asuransi pengiriman"
+      },
+      {
+        "type": "header",
         "content": "Trust Badges & Jaminan"
       },
       {
