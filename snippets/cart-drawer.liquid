@@ -18,13 +18,40 @@
 </style>
 
 {%- liquid
-  assign enable_free_shipping = settings.enable_free_shipping_bar
-  if enable_free_shipping == nil
-    assign enable_free_shipping = true
+  # Detect section and blocks
+  assign has_blocks = false
+  assign shipping_bar_block = nil
+  assign promo_banner_block = nil
+  assign cart_items_block = nil
+  assign upsell_block = nil
+  assign order_summary_block = nil
+  assign trust_badges_block = nil
+  assign empty_cart_block = nil
+
+  if section != nil and section.blocks.size > 0
+    assign has_blocks = true
+    for block in section.blocks
+      case block.type
+        when 'shipping_bar'
+          assign shipping_bar_block = block
+        when 'promo_banner'
+          assign promo_banner_block = block
+        when 'cart_items'
+          assign cart_items_block = block
+        when 'upsell'
+          assign upsell_block = block
+        when 'order_summary'
+          assign order_summary_block = block
+        when 'trust_badges'
+          assign trust_badges_block = block
+        when 'empty_cart'
+          assign empty_cart_block = block
+      endcase
+    endfor
   endif
 
-  # Threshold configuration from Theme Settings (Single Unified Free Shipping Limit)
-  assign raw_threshold = settings.free_shipping_threshold
+  # Threshold configuration from Section Settings or Theme Settings
+  assign raw_threshold = section.settings.free_shipping_threshold | default: settings.free_shipping_threshold
   if raw_threshold == blank or raw_threshold <= 0
     assign raw_threshold = 2000000
   endif
@@ -39,7 +66,7 @@
   assign empty_threshold_amount = threshold_amount
 
   # Estimasi Ongkos Kirim Standar (Regular Shipping Fee)
-  assign raw_shipping_fee = settings.estimated_shipping_fee
+  assign raw_shipping_fee = section.settings.estimated_shipping_fee | default: settings.estimated_shipping_fee
   if raw_shipping_fee == blank or raw_shipping_fee <= 0
     assign raw_shipping_fee = 25000
   endif
@@ -49,7 +76,16 @@
     assign shipping_fee_amount = raw_shipping_fee | times: 100
   endif
 
-  assign shipping_saved_text = settings.free_shipping_cost_saved | default: 'Rp 25.000'
+  assign shipping_saved_text = section.settings.free_shipping_cost_saved | default: settings.free_shipping_cost_saved | default: 'Rp 25.000'
+  assign drawer_heading = section.settings.heading | default: 'Keranjang Belanja'
+  assign drawer_color_scheme = section.settings.color_scheme | default: settings.cart_color_scheme | default: 'scheme-1'
+
+  assign enable_free_shipping = true
+  if has_blocks and shipping_bar_block == nil
+    assign enable_free_shipping = false
+  elsif settings.enable_free_shipping_bar == false and has_blocks == false
+    assign enable_free_shipping = false
+  endif
 
   if cart.total_price >= threshold_amount and cart != empty
     assign is_free_shipping = true
@@ -76,7 +112,7 @@
   <div id="CartDrawer" class="cart-drawer">
     <div id="CartDrawer-Overlay" class="cart-drawer__overlay"></div>
     <div
-      class="drawer__inner cd-drawer__inner gradient color-{{ settings.cart_color_scheme }}"
+      class="drawer__inner cd-drawer__inner gradient color-{{ drawer_color_scheme }}"
       role="dialog"
       aria-modal="true"
       aria-label="{{ 'sections.cart.title' | t }}"
@@ -85,7 +121,7 @@
       <!-- Cart Drawer Header -->
       <div class="cd-header">
         <div class="cd-header__title-wrap">
-          <h2 class="cd-header__title">Keranjang Belanja</h2>
+          <h2 class="cd-header__title">{{ drawer_heading }}</h2>
           <span class="cd-header__badge">{{ cart.item_count }} Item</span>
         </div>
         <button
@@ -103,11 +139,11 @@
 
       <!-- Free Shipping Progress Bar -->
       {%- if enable_free_shipping -%}
-      <div class="cd-shipping-bar">
+      <div class="cd-shipping-bar" {{ shipping_bar_block.shopify_attributes }}>
         <div class="cd-shipping-bar__meta">
           <div class="cd-shipping-bar__meta-left">
             {%- if is_free_shipping -%}
-              <span>🎉 <strong>Selamat! Kamu mendapatkan Bebas Ongkos Kirim!</strong></span>
+              <span>🎉 <strong>{{ shipping_bar_block.settings.celebration_text | default: 'Selamat! Kamu mendapatkan Bebas Ongkos Kirim!' }}</strong></span>
             {%- elsif cart == empty -%}
               <span class="cd-icon-shipping">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -153,16 +189,20 @@
             </span>
             <span class="cd-shipping-bar__success-sub-right">Hemat: {{ shipping_saved_text }}</span>
           </div>
-        {%- elsif cart != empty and settings.show_promo_banner != false -%}
-          <div class="cd-promo-banner">
+        {%- elsif cart != empty and promo_banner_block != nil or has_blocks == false and settings.show_promo_banner != false -%}
+          {%- liquid
+            assign promo_text = promo_banner_block.settings.text | default: settings.promo_banner_text | default: 'Hemat setiap Rp 1.100.000 dengan kupon'
+            assign promo_badge = promo_banner_block.settings.tag_label | default: settings.promo_banner_badge | default: 'Dinikmati 100x'
+          -%}
+          <div class="cd-promo-banner" {{ promo_banner_block.shopify_attributes }}>
             <div class="cd-promo-banner__left">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                 <line x1="7" y1="7" x2="7.01" y2="7"></line>
               </svg>
-              <span>{{ settings.promo_banner_text | default: 'Hemat setiap Rp 1.100.000 dengan kupon' }}</span>
+              <span>{{ promo_text }}</span>
             </div>
-            <div class="cd-promo-banner__right">{{ settings.promo_banner_badge | default: 'Dinikmati 100x' }}</div>
+            <div class="cd-promo-banner__right">{{ promo_badge }}</div>
           </div>
         {%- endif -%}
       </div>
@@ -210,7 +250,18 @@
       <div class="cd-main-scroll">
         {%- if cart == empty -%}
           <!-- Empty State -->
-          <div class="cd-empty drawer__inner-empty">
+          {%- liquid
+            assign empty_heading = empty_cart_block.settings.heading | default: settings.empty_cart_heading | default: 'Keranjang Belanja Anda Kosong'
+            assign empty_desc = empty_cart_block.settings.description | default: settings.empty_cart_text | default: 'Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!'
+            assign empty_btn_text = empty_cart_block.settings.button_text | default: settings.empty_cart_btn_text | default: 'Mulai Jelajahi Produk'
+            assign empty_btn_link = empty_cart_block.settings.button_link | default: settings.empty_cart_btn_url | default: routes.all_products_collection_url
+            assign empty_rec_heading = empty_cart_block.settings.recommendations_heading | default: 'REKOMENDASI TERPOPULER'
+            assign empty_rec_limit = empty_cart_block.settings.products_to_show | default: 3
+            assign empty_collection = empty_cart_block.settings.collection | default: settings.cart_drawer_collection
+            assign empty_help_text = empty_cart_block.settings.help_text | default: settings.support_phone_text | default: 'Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7'
+            assign empty_help_link = empty_cart_block.settings.help_link | default: settings.support_phone_url | default: '/pages/contact'
+          -%}
+          <div class="cd-empty drawer__inner-empty" {{ empty_cart_block.shopify_attributes }}>
             <div class="cd-empty__icon-wrap">
               <svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="#BA5635" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10 22C10 31 16 38 24 38C32 38 38 31 38 22H10Z" fill="#FDF3EB"/>
@@ -221,31 +272,28 @@
                 <path d="M43 24C44.5 24 45 26 45 27C45 28 44.5 30 43 30"/>
               </svg>
             </div>
-            <h3 class="cd-empty__title">{{ settings.empty_cart_heading | default: 'Keranjang Belanja Anda Kosong' }}</h3>
-            <p class="cd-empty__desc">
-              {{ settings.empty_cart_text | default: 'Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!' }}
-            </p>
-            {%- assign explore_url = settings.empty_cart_btn_url | default: routes.all_products_collection_url -%}
-            <a href="{{ explore_url }}" class="cd-btn-primary">
-              {{ settings.empty_cart_btn_text | default: 'Mulai Jelajahi Produk' }} &rarr;
+            <h3 class="cd-empty__title">{{ empty_heading }}</h3>
+            <p class="cd-empty__desc">{{ empty_desc }}</p>
+            <a href="{{ empty_btn_link }}" class="cd-btn-primary">
+              {{ empty_btn_text }} &rarr;
             </a>
 
             <!-- Rekomendasi Terpopuler -->
             <div class="cd-recommendations">
               <div class="cd-recommendations__header">
-                <span class="cd-recommendations__title">REKOMENDASI TERPOPULER</span>
+                <span class="cd-recommendations__title">{{ empty_rec_heading }}</span>
                 <a href="{{ routes.all_products_collection_url }}" class="cd-recommendations__link">Lihat Semua</a>
               </div>
 
               {%- liquid
                 assign recom_count = 0
-                if settings.cart_drawer_collection != blank and settings.cart_drawer_collection.products.size > 0
-                  for p in settings.cart_drawer_collection.products limit: 3
+                if empty_collection != blank and empty_collection.products.size > 0
+                  for p in empty_collection.products limit: empty_rec_limit
                     assign recom_count = recom_count | plus: 1
                     render 'cart-recom-card', product: p
                   endfor
                 elsif collections.all.products.size > 0
-                  for p in collections.all.products limit: 3
+                  for p in collections.all.products limit: empty_rec_limit
                     assign recom_count = recom_count | plus: 1
                     render 'cart-recom-card', product: p
                   endfor
@@ -318,11 +366,7 @@
                 <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
                 <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
               </svg>
-              {%- assign support_url = routes.root_url | append: 'pages/contact' -%}
-              {%- if settings.support_phone_url != blank -%}
-                {%- assign support_url = settings.support_phone_url -%}
-              {%- endif -%}
-              <span><a href="{{ support_url }}">{{ settings.support_phone_text | default: 'Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7' }}</a></span>
+              <span><a href="{{ empty_help_link }}">{{ empty_help_text }}</a></span>
             </div>
           </div>
         {%- else -%}
@@ -338,7 +382,7 @@
               method="post"
             >
               <div id="CartDrawer-CartItems" class="drawer__contents js-contents">
-                <div class="cart-items cd-items-list">
+                <div class="cart-items cd-items-list" {{ cart_items_block.shopify_attributes }}>
                   {%- for item in cart.items -%}
                     <div
                       id="CartDrawer-Item-{{ item.index | plus: 1 }}"
@@ -480,32 +524,40 @@
           </cart-drawer-items>
 
           <!-- Cross-sell / Upsell Section ("LENGKAPI DAPURMU") -->
-          {%- if settings.show_cart_upsell != false -%}
-          <div class="cd-upsell-section">
+          {%- if upsell_block != nil or has_blocks == false and settings.show_cart_upsell != false -%}
+          {%- liquid
+            assign upsell_heading = upsell_block.settings.heading | default: settings.cart_upsell_heading | default: 'LENGKAPI DAPURMU'
+            assign upsell_subheading = upsell_block.settings.subtitle | default: settings.cart_upsell_subheading | default: 'Penawaran Eksklusif Keranjang'
+            assign upsell_desc = upsell_block.settings.item_desc | default: 'Koleksi serbaguna terbaik'
+            assign upsell_btn_text = upsell_block.settings.button_label | default: '+ Tambah'
+            assign custom_upsell_prod = upsell_block.settings.product | default: settings.cart_upsell_product
+            assign custom_upsell_col = upsell_block.settings.collection | default: settings.cart_drawer_collection
+          -%}
+          <div class="cd-upsell-section" {{ upsell_block.shopify_attributes }}>
             <div class="cd-upsell__header">
-              <span class="cd-upsell__title">{{ settings.cart_upsell_heading | default: 'LENGKAPI DAPURMU' }}</span>
-              <span class="cd-upsell__subtitle">{{ settings.cart_upsell_subheading | default: 'Penawaran Eksklusif Keranjang' }}</span>
+              <span class="cd-upsell__title">{{ upsell_heading }}</span>
+              <span class="cd-upsell__subtitle">{{ upsell_subheading }}</span>
             </div>
 
             {%- liquid
               assign upsell_product = nil
-              if settings.cart_upsell_product != blank and settings.cart_upsell_product.available
+              if custom_upsell_prod != blank and custom_upsell_prod.available
                 assign in_cart = false
                 for it in cart.items
-                  if it.product_id == settings.cart_upsell_product.id
+                  if it.product_id == custom_upsell_prod.id
                     assign in_cart = true
                     break
                   endif
                 endfor
                 if in_cart == false
-                  assign upsell_product = settings.cart_upsell_product
+                  assign upsell_product = custom_upsell_prod
                 endif
               endif
 
               if upsell_product == nil
                 assign store_prods = nil
-                if settings.cart_drawer_collection != blank and settings.cart_drawer_collection.products.size > 0
-                  assign store_prods = settings.cart_drawer_collection.products
+                if custom_upsell_col != blank and custom_upsell_col.products.size > 0
+                  assign store_prods = custom_upsell_col.products
                 elsif collections['all'] != blank and collections['all'].products.size > 0
                   assign store_prods = collections['all'].products
                 elsif collections['rido-ganteng'] != blank and collections['rido-ganteng'].products.size > 0
@@ -559,7 +611,7 @@
                   {%- endif -%}
                   <div class="cd-upsell__info">
                     <span class="cd-upsell__name">{{ upsell_product.title | escape }}</span>
-                    <span class="cd-upsell__desc">Koleksi serbaguna terbaik</span>
+                    <span class="cd-upsell__desc">{{ upsell_desc }}</span>
                     <div class="cd-upsell__price-wrap">
                       <span class="cd-upsell__price">{{ upsell_product.price | money }}</span>
                       {%- if upsell_product.compare_at_price > upsell_product.price -%}
@@ -573,7 +625,7 @@
                   class="cd-upsell__btn"
                   onclick="addCrossSellItem(this, '{{ upsell_product.first_available_variant.id }}')"
                 >
-                  + Tambah
+                  {{ upsell_btn_text }}
                 </button>
               </div>
             {%- endif -%}
@@ -584,7 +636,7 @@
 
       <!-- Drawer Footer (Order Summary & Checkout) -->
       {%- if cart != empty -%}
-        <div class="drawer__footer cd-drawer__footer">
+        <div class="drawer__footer cd-drawer__footer" {{ order_summary_block.shopify_attributes }}>
           <div class="cart-drawer__footer">
             {%- liquid
               assign total_savings = cart.total_discount
@@ -625,6 +677,7 @@
             {%- endif -%}
 
             <!-- Shipping Cost Row -->
+            {%- if order_summary_block.settings.show_shipping_row != false -%}
             <div class="cd-summary-row">
               <span class="cd-summary-row__label">Estimasi Ongkos Kirim</span>
               <div class="cd-summary-row__value">
@@ -637,6 +690,7 @@
                 {%- endif -%}
               </div>
             </div>
+            {%- endif -%}
 
             <div class="cd-summary-divider"></div>
 
@@ -645,7 +699,7 @@
               <span class="cd-total-row__label">Total Pembayaran</span>
               <span class="cd-total-row__value">{{ final_total | money_with_currency }}</span>
             </div>
-            <div class="cd-summary-note">Termasuk PPN &amp; asuransi pengiriman</div>
+            <div class="cd-summary-note">{{ order_summary_block.settings.tax_note | default: 'Termasuk PPN & asuransi pengiriman' }}</div>
 
             <!-- Checkout CTA Button -->
             <div class="cart__ctas">
@@ -660,32 +714,48 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <span>Lanjut ke Pembayaran &rarr;</span>
+                <span>{{ order_summary_block.settings.button_label | default: 'Lanjut ke Pembayaran' }} &rarr;</span>
               </button>
             </div>
 
-            {%- if settings.show_trust_badges != false -%}
-            <!-- Trust Badges -->
-            <div class="cd-trust-badges">
-              {%- if settings.trust_badge_1 != blank -%}
-                <div class="cd-trust-badge">
-                  <span>🛡️</span>
-                  <span>{{ settings.trust_badge_1 }}</span>
-                </div>
-              {%- endif -%}
-              {%- if settings.trust_badge_2 != blank -%}
-                <div class="cd-trust-badge">
-                  <span>• 💳</span>
-                  <span>{{ settings.trust_badge_2 }}</span>
-                </div>
-              {%- endif -%}
-              {%- if is_free_shipping -%}
-                <div class="cd-trust-badge" style="color: var(--cd-green); font-weight: 600;">
-                  <span>• 🚚</span>
-                  <span>Bebas Ongkir Aktif</span>
-                </div>
-              {%- endif -%}
-            </div>
+            {%- if trust_badges_block != nil or has_blocks == false and settings.show_trust_badges != false -%}
+              {%- liquid
+                assign badge_1 = trust_badges_block.settings.badge_1 | default: settings.trust_badge_1 | default: 'Garansi Uji Coba 100 Hari'
+                assign badge_2 = trust_badges_block.settings.badge_2 | default: settings.trust_badge_2 | default: 'Cicilan 0% Tersedia'
+                assign badge_3 = trust_badges_block.settings.badge_3 | default: settings.trust_badge_3 | default: 'Bebas Ongkir Aktif'
+              -%}
+              <!-- Trust Badges -->
+              <div class="cd-trust-badges" {{ trust_badges_block.shopify_attributes }}>
+                {%- if badge_1 != blank -%}
+                  <div class="cd-trust-badge">
+                    <span>🛡️</span>
+                    <span>{{ badge_1 }}</span>
+                  </div>
+                {%- endif -%}
+                {%- if badge_2 != blank -%}
+                  <div class="cd-trust-badge">
+                    <span>• 💳</span>
+                    <span>{{ badge_2 }}</span>
+                  </div>
+                {%- endif -%}
+                {%- if is_free_shipping and badge_3 != blank -%}
+                  <div class="cd-trust-badge" style="color: var(--cd-green); font-weight: 600;">
+                    <span>• 🚚</span>
+                    <span>{{ badge_3 }}</span>
+                  </div>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+
+            <!-- Render Any Third-Party App Blocks -->
+            {%- if section.blocks != blank -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == '@app' -%}
+                  <div class="cd-app-block" {{ block.shopify_attributes }}>
+                    {% render block %}
+                  </div>
+                {%- endif -%}
+              {%- endfor -%}
             {%- endif -%}
           </div>
         </div>

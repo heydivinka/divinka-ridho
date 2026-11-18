@@ -326,9 +326,9 @@
       {{ 'accessibility.skip_to_text' | t }}
     </a>
 
-    {%- if settings.cart_type == 'drawer' -%}
-      {%- render 'cart-drawer' -%}
-    {%- endif -%}
+    {%- comment -%}
+      Cart drawer is rendered as a customizable section via sections/header-group.json with full schema and block support
+    {%- endcomment -%}
 
     {% sections 'header-group' %}
 
