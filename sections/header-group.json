@@ -53,10 +53,85 @@
         "padding_top": 20,
         "padding_bottom": 20
       }
+    },
+    "cart-drawer": {
+      "type": "cart-drawer",
+      "settings": {
+        "enable_drawer": true,
+        "heading": "Keranjang Belanja",
+        "color_scheme": "scheme-1",
+        "enable_free_shipping": true,
+        "free_shipping_threshold": 2000000,
+        "estimated_shipping_fee": 25000,
+        "free_shipping_cost_saved": "Rp 25.000",
+        "celebration_text": "Selamat! Kamu mendapatkan Bebas Ongkir!",
+        "show_promo_banner": true,
+        "promo_banner_text": "Hemat setiap Rp 1.100.000 dengan kupon",
+        "promo_banner_badge": "Dinikmati 100x",
+        "show_vendor": false,
+        "show_change_link": true,
+        "show_cart_upsell": true,
+        "cart_upsell_heading": "LENGKAPI DAPURMU",
+        "cart_upsell_subheading": "Penawaran Eksklusif Keranjang",
+        "cart_upsell_desc": "Koleksi serbaguna terbaik",
+        "cart_upsell_btn_text": "+ Tambah",
+        "show_shipping_row": true,
+        "cart_checkout_button_text": "Lanjut ke Pembayaran",
+        "cart_tax_note": "Termasuk PPN & asuransi pengiriman",
+        "show_trust_badges": true,
+        "trust_badge_1": "Garansi Uji Coba 100 Hari",
+        "trust_badge_2": "Cicilan 0% Tersedia",
+        "trust_badge_3": "Bebas Ongkir Aktif",
+        "empty_cart_heading": "Keranjang Belanja Anda Kosong",
+        "empty_cart_text": "Sepertinya Anda belum menambahkan peralatan dapur favorit ke dalam keranjang. Temukan koleksi terbaik kami!",
+        "empty_cart_btn_text": "Mulai Jelajahi Produk",
+        "empty_cart_rec_heading": "REKOMENDASI TERPOPULER",
+        "support_phone_text": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7"
+      },
+      "blocks": {
+        "shipping_bar_block": {
+          "type": "shipping_bar",
+          "settings": {}
+        },
+        "promo_banner_block": {
+          "type": "promo_banner",
+          "settings": {}
+        },
+        "cart_items_block": {
+          "type": "cart_items",
+          "settings": {}
+        },
+        "upsell_block": {
+          "type": "upsell",
+          "settings": {}
+        },
+        "order_summary_block": {
+          "type": "order_summary",
+          "settings": {}
+        },
+        "trust_badges_block": {
+          "type": "trust_badges",
+          "settings": {}
+        },
+        "empty_cart_block": {
+          "type": "empty_cart",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "shipping_bar_block",
+        "promo_banner_block",
+        "cart_items_block",
+        "upsell_block",
+        "order_summary_block",
+        "trust_badges_block",
+        "empty_cart_block"
+      ]
     }
   },
   "order": [
     "announcement-bar",
-    "header"
+    "header",
+    "cart-drawer"
   ]
 }

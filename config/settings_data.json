@@ -127,6 +127,27 @@
     "show_cart_note": false,
     "cart_drawer_collection": "",
     "cart_color_scheme": "scheme-1",
+    "enable_free_shipping_bar": true,
+    "free_shipping_threshold": 2000000,
+    "free_shipping_cost_saved": "Rp 25.000",
+    "show_promo_banner": true,
+    "promo_banner_text": "Hemat setiap Rp 1.100.000 dengan kupon",
+    "promo_banner_badge": "Dinikmati 100x",
+    "show_cart_upsell": true,
+    "cart_upsell_heading": "LENGKAPI DAPURMU",
+    "cart_upsell_subheading": "Penawaran Eksklusif Keranjang",
+    "cart_upsell_product": "",
+    "empty_cart_heading": "Keranjang Belanja Anda Kosong",
+    "empty_cart_text": "Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!",
+    "empty_cart_btn_text": "Mulai Jelajahi Produk",
+    "empty_cart_btn_url": "",
+    "support_phone_text": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7",
+    "support_phone_url": "",
+    "cart_checkout_button_text": "Lanjut ke Pembayaran",
+    "cart_tax_note": "Termasuk PPN & asuransi pengiriman",
+    "show_trust_badges": true,
+    "trust_badge_1": "Garansi Uji Coba 100 Hari",
+    "trust_badge_2": "Cicilan 0% Tersedia",
     "sections": {
       "main-password-header": {
         "type": "main-password-header",
@@ -198,7 +219,8 @@
           "shadow": "#121212"
         }
       }
-    }
+    },
+    "estimated_shipping_fee": 25000
   },
   "presets": {
     "Dawn": {
@@ -371,11 +393,32 @@
       "predictive_search_show_vendor": false,
       "predictive_search_show_price": false,
       "currency_code_enabled": true,
-      "cart_type": "notification",
+      "cart_type": "drawer",
       "show_vendor": false,
       "show_cart_note": false,
       "cart_drawer_collection": "",
       "cart_color_scheme": "scheme-1",
+      "enable_free_shipping_bar": true,
+      "free_shipping_threshold": 2000000,
+      "free_shipping_cost_saved": "Rp 25.000",
+      "show_promo_banner": true,
+      "promo_banner_text": "Hemat setiap Rp 1.100.000 dengan kupon",
+      "promo_banner_badge": "Dinikmati 100x",
+      "show_cart_upsell": true,
+      "cart_upsell_heading": "LENGKAPI DAPURMU",
+      "cart_upsell_subheading": "Penawaran Eksklusif Keranjang",
+      "cart_upsell_product": "",
+      "empty_cart_heading": "Keranjang Belanja Anda Kosong",
+      "empty_cart_text": "Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!",
+      "empty_cart_btn_text": "Mulai Jelajahi Produk",
+      "empty_cart_btn_url": "",
+      "support_phone_text": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7",
+      "support_phone_url": "",
+      "cart_checkout_button_text": "Lanjut ke Pembayaran",
+      "cart_tax_note": "Termasuk PPN & asuransi pengiriman",
+      "show_trust_badges": true,
+      "trust_badge_1": "Garansi Uji Coba 100 Hari",
+      "trust_badge_2": "Cicilan 0% Tersedia",
       "sections": {
         "main-password-header": {
           "type": "main-password-header",
@@ -389,7 +432,8 @@
             "color_scheme": "scheme-1"
           }
         }
-      }
+      },
+      "estimated_shipping_fee": 25000
     }
   }
 }

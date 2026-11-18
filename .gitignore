@@ -1,3 +1,7 @@
+scratch/
+.DS_Store
+Thumbs.db
+*.log
 .agent
 exp-theme.zip
 docs

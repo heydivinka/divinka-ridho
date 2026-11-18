@@ -1,0 +1,35 @@
+{% comment %}
+  Renders product recommendation card in cart drawer
+  Usage: {% render 'cart-recom-card', product: product %}
+{% endcomment %}
+<div class="cd-recom-card">
+  <div class="cd-recom-card__left">
+    {%- if product.featured_image -%}
+      <img
+        class="cd-recom-card__img"
+        src="{{ product.featured_image | image_url: width: 120 }}"
+        alt="{{ product.title | escape }}"
+        width="52"
+        height="52"
+        loading="lazy"
+      >
+    {%- else -%}
+      <div class="cd-recom-card__img">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" stroke="#BA5635" stroke-width="1.8">
+          <ellipse cx="14" cy="16" rx="9" ry="6"/>
+          <path d="M23 16L29 18"/>
+        </svg>
+      </div>
+    {%- endif -%}
+    <div class="cd-recom-card__info">
+      <div class="cd-recom-card__title-row">
+        <a href="{{ product.url }}" class="cd-recom-card__name">{{ product.title | escape }}</a>
+        {%- if product.tags contains 'bestseller' or product.tags contains 'Best Seller' -%}
+          <span class="cd-badge-gold">Best Seller</span>
+        {%- endif -%}
+      </div>
+      <span class="cd-recom-card__price">{{ product.price | money }}</span>
+    </div>
+  </div>
+  <a href="{{ product.url }}" class="cd-btn-outline-pill">Lihat Produk</a>
+</div>

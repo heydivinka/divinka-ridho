@@ -1,1 +1,510 @@
-{%- render 'cart-drawer' -%}
+{% comment %}
+  Cart Drawer Section with Full Schema & Blocks Support
+  Renders the Modern Luxury Cart Drawer with dynamic block architecture.
+{% endcomment %}
+
+{%- if settings.cart_type == 'drawer' and section.settings.enable_drawer != false -%}
+  {%- render 'cart-drawer', section: section -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart Drawer",
+  "tag": "section",
+  "class": "section-cart-drawer",
+  "enabled_on": {
+    "groups": ["header", "aside"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_drawer",
+      "label": "Aktifkan Cart Drawer",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Judul Keranjang",
+      "default": "Keranjang Belanja"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Skema Warna",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Pengaturan Batas Gratis Ongkir"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_free_shipping",
+      "label": "Aktifkan Progress Bar Gratis Ongkir",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Batas Harga Belanja untuk Gratis Ongkir",
+      "default": 2000000,
+      "info": "Contoh: Masukkan 2000000 untuk target belanja Rp 2.000.000"
+    },
+    {
+      "type": "number",
+      "id": "estimated_shipping_fee",
+      "label": "Biaya Estimasi Ongkos Kirim",
+      "default": 25000,
+      "info": "Contoh: Masukkan 25000 untuk Rp 25.000"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_cost_saved",
+      "label": "Teks Nominal Ongkir yang Dihemat",
+      "default": "Rp 25.000"
+    },
+    {
+      "type": "text",
+      "id": "celebration_text",
+      "label": "Teks Saat Target Ongkir Tercapai",
+      "default": "Selamat! Kamu mendapatkan Bebas Ongkir!"
+    },
+    {
+      "type": "header",
+      "content": "Banner Kupon / Voucher Diskon"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_promo_banner",
+      "label": "Tampilkan Banner Kupon Promo",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "promo_banner_text",
+      "label": "Teks Promo Kupon",
+      "default": "Hemat setiap Rp 1.100.000 dengan kupon"
+    },
+    {
+      "type": "text",
+      "id": "promo_banner_badge",
+      "label": "Label Tag Promo Kanan",
+      "default": "Dinikmati 100x"
+    },
+    {
+      "type": "header",
+      "content": "Daftar Item Keranjang"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Tampilkan Vendor / Merek Produk",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_change_link",
+      "label": "Tampilkan Tombol Ubah Varian",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Cross-sell / Upsell (Lengkapi Dapurmu)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart_upsell",
+      "label": "Tampilkan Seksi Rekomendasi Cross-sell",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cart_upsell_heading",
+      "label": "Judul Seksi Upsell",
+      "default": "LENGKAPI DAPURMU"
+    },
+    {
+      "type": "text",
+      "id": "cart_upsell_subheading",
+      "label": "Subteks Kanan",
+      "default": "Penawaran Eksklusif Keranjang"
+    },
+    {
+      "type": "product",
+      "id": "cart_upsell_product",
+      "label": "Pilihan Produk Khusus Upsell",
+      "info": "Pilih produk spesifik. Jika kosong, sistem otomatis merekomendasikan produk dari koleksi."
+    },
+    {
+      "type": "collection",
+      "id": "cart_drawer_collection",
+      "label": "Koleksi Rekomendasi Cadangan"
+    },
+    {
+      "type": "text",
+      "id": "cart_upsell_desc",
+      "label": "Deskripsi Singkat Produk",
+      "default": "Koleksi serbaguna terbaik"
+    },
+    {
+      "type": "text",
+      "id": "cart_upsell_btn_text",
+      "label": "Teks Tombol Tambah",
+      "default": "+ Tambah"
+    },
+    {
+      "type": "header",
+      "content": "Rincian Pembayaran & Tombol Checkout"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_row",
+      "label": "Tampilkan Baris Estimasi Ongkir",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cart_checkout_button_text",
+      "label": "Teks Tombol Checkout",
+      "default": "Lanjut ke Pembayaran"
+    },
+    {
+      "type": "text",
+      "id": "cart_tax_note",
+      "label": "Catatan Pajak & Pengiriman",
+      "default": "Termasuk PPN & asuransi pengiriman"
+    },
+    {
+      "type": "header",
+      "content": "Trust Badges & Jaminan"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_badges",
+      "label": "Tampilkan Trust Badges di Bawah Checkout",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_1",
+      "label": "Trust Badge 1",
+      "default": "Garansi Uji Coba 100 Hari"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_2",
+      "label": "Trust Badge 2",
+      "default": "Cicilan 0% Tersedia"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_3",
+      "label": "Trust Badge 3",
+      "default": "Bebas Ongkir Aktif"
+    },
+    {
+      "type": "header",
+      "content": "Keranjang Belanja Kosong (Empty State)"
+    },
+    {
+      "type": "text",
+      "id": "empty_cart_heading",
+      "label": "Judul Saat Keranjang Kosong",
+      "default": "Keranjang Belanja Anda Kosong"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_cart_text",
+      "label": "Deskripsi Pesan",
+      "default": "Sepertinya Anda belum menambahkan peralatan dapur favorit ke dalam keranjang. Temukan koleksi terbaik kami!"
+    },
+    {
+      "type": "text",
+      "id": "empty_cart_btn_text",
+      "label": "Teks Tombol Belanja",
+      "default": "Mulai Jelajahi Produk"
+    },
+    {
+      "type": "url",
+      "id": "empty_cart_btn_url",
+      "label": "Link Tujuan Tombol Belanja"
+    },
+    {
+      "type": "text",
+      "id": "empty_cart_rec_heading",
+      "label": "Judul Rekomendasi Terpopuler",
+      "default": "REKOMENDASI TERPOPULER"
+    },
+    {
+      "type": "range",
+      "id": "empty_cart_products_count",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 3,
+      "label": "Jumlah Produk Rekomendasi"
+    },
+    {
+      "type": "text",
+      "id": "support_phone_text",
+      "label": "Teks Bantuan Layanan Pelanggan",
+      "default": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7"
+    },
+    {
+      "type": "url",
+      "id": "support_phone_url",
+      "label": "Link Kontak / Bantuan"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "shipping_bar",
+      "name": "Progress Bebas Ongkir",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_icon",
+          "label": "Tampilkan Ikon Pengiriman",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "celebration_text",
+          "label": "Teks Saat Target Ongkir Tercapai",
+          "default": "Selamat! Kamu mendapatkan Bebas Ongkir!"
+        },
+        {
+          "type": "text",
+          "id": "unlocked_badge",
+          "label": "Teks Badge di Bawah Checkout",
+          "default": "Bebas Ongkir Aktif"
+        }
+      ]
+    },
+    {
+      "type": "promo_banner",
+      "name": "Banner Kupon Promo",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Teks Promo Kupon",
+          "default": "Hemat setiap Rp 1.100.000 dengan kupon"
+        },
+        {
+          "type": "text",
+          "id": "tag_label",
+          "label": "Label Tag Promo Kanan",
+          "default": "Dinikmati 100x"
+        }
+      ]
+    },
+    {
+      "type": "cart_items",
+      "name": "Daftar Item Keranjang",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_vendor",
+          "label": "Tampilkan Vendor / Merek Produk",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_change_link",
+          "label": "Tampilkan Tombol Ubah Varian",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "upsell",
+      "name": "Cross-sell Upsell",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Judul Seksi Upsell",
+          "default": "LENGKAPI DAPURMU"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subteks Kanan",
+          "default": "Penawaran Eksklusif Keranjang"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Pilihan Produk Khusus Upsell",
+          "info": "Pilih produk spesifik. Jika kosong, sistem otomatis merekomendasikan produk dari koleksi."
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Koleksi Rekomendasi Cadangan"
+        },
+        {
+          "type": "text",
+          "id": "item_desc",
+          "label": "Deskripsi Singkat Produk",
+          "default": "Koleksi serbaguna terbaik"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Teks Tombol Tambah",
+          "default": "+ Tambah"
+        }
+      ]
+    },
+    {
+      "type": "order_summary",
+      "name": "Rincian Pembayaran",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_shipping_row",
+          "label": "Tampilkan Baris Estimasi Ongkir",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Teks Tombol Checkout",
+          "default": "Lanjut ke Pembayaran"
+        },
+        {
+          "type": "text",
+          "id": "tax_note",
+          "label": "Catatan Pajak & Pengiriman",
+          "default": "Termasuk PPN & asuransi pengiriman"
+        }
+      ]
+    },
+    {
+      "type": "trust_badges",
+      "name": "Trust Badges & Jaminan",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "badge_1",
+          "label": "Trust Badge 1",
+          "default": "Garansi Uji Coba 100 Hari"
+        },
+        {
+          "type": "text",
+          "id": "badge_2",
+          "label": "Trust Badge 2",
+          "default": "Cicilan 0% Tersedia"
+        },
+        {
+          "type": "text",
+          "id": "badge_3",
+          "label": "Trust Badge 3",
+          "default": "Bebas Ongkir Aktif"
+        }
+      ]
+    },
+    {
+      "type": "empty_cart",
+      "name": "Keranjang Kosong",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Judul Saat Keranjang Kosong",
+          "default": "Keranjang Belanja Anda Kosong"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Deskripsi Pesan",
+          "default": "Sepertinya Anda belum menambahkan peralatan dapur favorit ke dalam keranjang. Temukan koleksi terbaik kami!"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Teks Tombol Belanja",
+          "default": "Mulai Jelajahi Produk"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Link Tujuan Tombol Belanja"
+        },
+        {
+          "type": "text",
+          "id": "recommendations_heading",
+          "label": "Judul Seksi Rekomendasi Terpopuler",
+          "default": "REKOMENDASI TERPOPULER"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Koleksi Rekomendasi Saat Kosong"
+        },
+        {
+          "type": "range",
+          "id": "products_to_show",
+          "min": 2,
+          "max": 6,
+          "step": 1,
+          "default": 3,
+          "label": "Jumlah Produk Rekomendasi"
+        },
+        {
+          "type": "text",
+          "id": "help_text",
+          "label": "Teks Bantuan Layanan Pelanggan",
+          "default": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7"
+        },
+        {
+          "type": "url",
+          "id": "help_link",
+          "label": "Link Kontak / Bantuan"
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart Drawer",
+      "blocks": [
+        {
+          "type": "shipping_bar"
+        },
+        {
+          "type": "promo_banner"
+        },
+        {
+          "type": "cart_items"
+        },
+        {
+          "type": "upsell"
+        },
+        {
+          "type": "order_summary"
+        },
+        {
+          "type": "trust_badges"
+        },
+        {
+          "type": "empty_cart"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

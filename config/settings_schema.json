@@ -1449,6 +1449,164 @@
         "id": "cart_color_scheme",
         "label": "t:sections.all.colors.label",
         "default": "scheme-1"
+      },
+      {
+        "type": "header",
+        "content": "Gratis Ongkir (Free Shipping Bar)"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_free_shipping_bar",
+        "label": "Aktifkan Progress Bar Gratis Ongkir",
+        "default": true
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "Batas Harga Belanja untuk Gratis Ongkir",
+        "info": "Contoh: Masukkan 2000000 untuk target belanja Rp 2.000.000 (berlaku saat keranjang kosong maupun aktif)",
+        "default": 2000000
+      },
+      {
+        "type": "number",
+        "id": "estimated_shipping_fee",
+        "label": "Biaya Estimasi Ongkos Kirim Standar",
+        "info": "Nominal ongkir reguler saat gratis ongkir belum tercapai (contoh: 25000 untuk Rp 25.000)",
+        "default": 25000
+      },
+      {
+        "type": "text",
+        "id": "free_shipping_cost_saved",
+        "label": "Estimasi Nominal Ongkir yang Dihemat",
+        "info": "Teks penghematan saat gratis ongkir tercapai (default: Rp 25.000)",
+        "default": "Rp 25.000"
+      },
+      {
+        "type": "header",
+        "content": "Banner Kupon / Voucher Diskon"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_promo_banner",
+        "label": "Tampilkan Banner Kupon Promo",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "promo_banner_text",
+        "label": "Teks Promo Kupon",
+        "default": "Hemat setiap Rp 1.100.000 dengan kupon"
+      },
+      {
+        "type": "text",
+        "id": "promo_banner_badge",
+        "label": "Label Tag Promo Kanan",
+        "default": "Dinikmati 100x"
+      },
+      {
+        "type": "header",
+        "content": "Cross-sell / Upsell (Lengkapi Dapurmu)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_cart_upsell",
+        "label": "Tampilkan Seksi Rekomendasi Cross-sell",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "cart_upsell_heading",
+        "label": "Judul Seksi Upsell",
+        "default": "LENGKAPI DAPURMU"
+      },
+      {
+        "type": "text",
+        "id": "cart_upsell_subheading",
+        "label": "Subteks Seksi Upsell",
+        "default": "Penawaran Eksklusif Keranjang"
+      },
+      {
+        "type": "product",
+        "id": "cart_upsell_product",
+        "label": "Produk Pilihan Khusus Upsell",
+        "info": "Pilih produk khusus untuk di-upsell. Jika kosong, tema akan otomatis merekomendasikan produk pertama dari katalog toko."
+      },
+      {
+        "type": "header",
+        "content": "Keranjang Belanja Kosong (Empty State)"
+      },
+      {
+        "type": "text",
+        "id": "empty_cart_heading",
+        "label": "Judul Saat Keranjang Kosong",
+        "default": "Keranjang Belanja Anda Kosong"
+      },
+      {
+        "type": "textarea",
+        "id": "empty_cart_text",
+        "label": "Deskripsi Saat Keranjang Kosong",
+        "default": "Sepertinya Anda belum menambahkan peralatan dapur impian ke dalam keranjang. Temukan koleksi terbaik kami!"
+      },
+      {
+        "type": "text",
+        "id": "empty_cart_btn_text",
+        "label": "Teks Tombol Belanja",
+        "default": "Mulai Jelajahi Produk"
+      },
+      {
+        "type": "url",
+        "id": "empty_cart_btn_url",
+        "label": "Link Tujuan Tombol Belanja",
+        "info": "Kosongkan untuk otomatis mengarah ke katalog semua produk."
+      },
+      {
+        "type": "text",
+        "id": "support_phone_text",
+        "label": "Teks Bantuan Layanan Pelanggan",
+        "default": "Butuh bantuan memilih? Hubungi Layanan Pelanggan 24/7"
+      },
+      {
+        "type": "url",
+        "id": "support_phone_url",
+        "label": "Link Kontak / Bantuan"
+      },
+      {
+        "type": "header",
+        "content": "Tombol Pembayaran (Checkout CTA)"
+      },
+      {
+        "type": "text",
+        "id": "cart_checkout_button_text",
+        "label": "Teks Tombol Pembayaran / Checkout",
+        "default": "Lanjut ke Pembayaran"
+      },
+      {
+        "type": "text",
+        "id": "cart_tax_note",
+        "label": "Catatan Pajak & Pengiriman",
+        "default": "Termasuk PPN & asuransi pengiriman"
+      },
+      {
+        "type": "header",
+        "content": "Trust Badges & Jaminan"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_trust_badges",
+        "label": "Tampilkan Trust Badges di Bawah Checkout",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "trust_badge_1",
+        "label": "Trust Badge 1",
+        "default": "Garansi Uji Coba 100 Hari"
+      },
+      {
+        "type": "text",
+        "id": "trust_badge_2",
+        "label": "Trust Badge 2",
+        "default": "Cicilan 0% Tersedia"
       }
     ]
   }
