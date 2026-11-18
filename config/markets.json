@@ -11,12 +11,6 @@
   "markets": {
     "indonesia": {
       "parent": "@default"
-    },
-    "canada": {
-      "parent": "@default"
-    },
-    "us": {
-      "parent": "@default"
     }
   }
 }

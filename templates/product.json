@@ -27,6 +27,28 @@
           "type": "price",
           "settings": {}
         },
+        "rating_aPjY6c": {
+          "type": "rating",
+          "settings": {
+            "rating_score": "4.9",
+            "review_count_text": "(2.418 Ulasan Terverifikasi)",
+            "review_link": "/reviews",
+            "use_metafield_if_available": false
+          }
+        },
+        "inventory_ALrtfB": {
+          "type": "inventory",
+          "settings": {
+            "show_icon": true,
+            "urgency_prefix": "34 dibeli dalam 12 jam terakhir",
+            "show_inventory_quantity": true,
+            "stock_prefix": "Sisa",
+            "stock_suffix": "pcs di gudang",
+            "untracked_stock_text": "Ready stock di gudang",
+            "continue_selling_text": "Pre-order tersedia",
+            "sold_out_text": "Stok sedang habis di gudang"
+          }
+        },
         "variant_picker": {
           "type": "variant_picker",
           "settings": {
@@ -64,48 +86,19 @@
             "testimonial_badge": "Pembeli Terverifikasi",
             "testimonial_quote": "“Wajan terbaik yang pernah saya beli! Telur meluncur mulus tanpa minyak banyak, mudah dicuci, dan warnanya bikin meja dapur terlihat mewah.”"
           }
-        },
-        "share": {
-          "type": "share",
-          "settings": {
-            "share_label": "Share"
-          }
-        },
-        "rating": {
-          "type": "rating",
-          "settings": {
-            "rating_score": "4.9",
-            "review_count_text": "(2.418 Ulasan Terverifikasi)",
-            "review_link": "#reviews",
-            "use_metafield_if_available": false
-          }
-        },
-        "inventory": {
-          "type": "inventory",
-          "settings": {
-            "show_icon": true,
-            "urgency_prefix": "34 dibeli dalam 12 jam terakhir",
-            "show_inventory_quantity": true,
-            "stock_prefix": "Sisa",
-            "stock_suffix": "pcs di gudang",
-            "untracked_stock_text": "Ready stock di gudang",
-            "continue_selling_text": "Pre-order tersedia",
-            "sold_out_text": "Stok sedang habis di gudang"
-          }
         }
       },
       "block_order": [
         "vendor",
         "title",
-        "rating",
-        "inventory",
         "price",
+        "rating_aPjY6c",
+        "inventory_ALrtfB",
         "variant_picker",
         "size_chart",
         "quantity_selector",
         "buy_buttons",
-        "description",
-        "share"
+        "description"
       ],
       "settings": {
         "enable_sticky_info": true,
@@ -119,8 +112,13 @@
         "image_zoom": "lightbox",
         "hide_variants": true,
         "enable_video_looping": false,
-        "padding_top": 24,
-        "padding_bottom": 12
+        "padding_top": 32,
+        "padding_bottom": 32,
+        "enable_sticky_atc": true,
+        "sticky_atc_desktop_full_width": false,
+        "sticky_atc_desktop_width": 720,
+        "sticky_atc_button_label": "Tambah ke Keranjang",
+        "sticky_atc_show_trust_badges": true
       }
     },
     "disclosures": {
@@ -137,7 +135,9 @@
     "related-products": {
       "type": "related-products",
       "settings": {
+        "eyebrow": "REKOMENDASI PILIHAN",
         "heading": "Sempurna Dipadukan Dengan",
+        "subtitle": "Lengkapi pengalaman belanja Anda dengan pasangan produk terbaiknya.",
         "heading_size": "h2",
         "products_to_show": 4,
         "columns_desktop": 4,
@@ -148,6 +148,8 @@
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": false,
+        "show_quick_add": true,
+        "quick_add_label": "Tambah",
         "padding_top": 36,
         "padding_bottom": 28
       }
