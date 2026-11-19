@@ -118,7 +118,10 @@
         "sticky_atc_desktop_full_width": false,
         "sticky_atc_desktop_width": 720,
         "sticky_atc_button_label": "Tambah ke Keranjang",
-        "sticky_atc_show_trust_badges": true
+        "sticky_atc_show_trust_badges": true,
+        "atc_btn_background": "#c85a38",
+        "atc_btn_text_color": "#ffffff",
+        "atc_btn_hover_background": "#b04928"
       }
     },
     "disclosures": {
@@ -136,8 +139,10 @@
       "type": "related-products",
       "settings": {
         "eyebrow": "REKOMENDASI PILIHAN",
+        "show_eyebrow_mobile": false,
         "heading": "Sempurna Dipadukan Dengan",
         "subtitle": "Lengkapi pengalaman belanja Anda dengan pasangan produk terbaiknya.",
+        "show_subtitle_mobile": false,
         "heading_size": "h2",
         "products_to_show": 4,
         "columns_desktop": 4,
@@ -148,6 +153,8 @@
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": false,
+        "show_card_excerpt": true,
+        "show_card_excerpt_mobile": true,
         "show_quick_add": true,
         "quick_add_label": "Tambah",
         "padding_top": 36,

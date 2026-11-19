@@ -6,6 +6,9 @@
 :root {
   --exp-terracotta: #C85A38;
   --exp-terracotta-hover: #b04928;
+  --exp-atc-btn-bg: var(--exp-terracotta);
+  --exp-atc-btn-text: #ffffff;
+  --exp-atc-btn-hover: var(--exp-terracotta-hover);
   --exp-terracotta-light: #fbf1ed;
   --exp-terracotta-border: #f2cbbe;
   --exp-text-main: #1c1917;
@@ -106,6 +109,13 @@
   stroke: #dc2626;
 }
 
+/* Ensure Shopify Header always stacks above gallery badges and product content */
+.section-header,
+.shopify-section-header-sticky,
+.header-wrapper {
+  z-index: 30 !important;
+}
+
 /* ==========================================================================
    2. MEDIA GALLERY BADGES & OVERLAYS
    ========================================================================== */
@@ -116,7 +126,7 @@
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 10;
+  z-index: 2;
 }
 
 .product__media-wrapper {
@@ -210,7 +220,7 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   pointer-events: auto;
-  z-index: 12;
+  z-index: 2;
   line-height: 0;
 }
 
@@ -248,7 +258,7 @@
   bottom: 14px;
   right: 14px;
   pointer-events: auto;
-  z-index: 12;
+  z-index: 2;
 }
 
 .exp-slider-counter {
@@ -1322,8 +1332,8 @@ fieldset.exp-size-section,
 }
 
 .exp-sticky-atc__btn {
-  background-color: var(--exp-terracotta);
-  color: #ffffff;
+  background-color: var(--exp-atc-btn-bg, var(--exp-terracotta));
+  color: var(--exp-atc-btn-text, #ffffff);
   border: none;
   border-radius: 12px;
   padding: 0 18px;
@@ -1347,7 +1357,7 @@ fieldset.exp-size-section,
 }
 
 .exp-sticky-atc__btn:hover:not(:disabled) {
-  background-color: var(--exp-terracotta-hover);
+  background-color: var(--exp-atc-btn-hover, var(--exp-terracotta-hover));
 }
 
 .exp-sticky-atc__btn:disabled {
@@ -1572,8 +1582,8 @@ fieldset.exp-size-section,
 .product-form__submit,
 .product-form__submit.button--primary,
 .product-form__submit.button--secondary {
-  background-color: var(--exp-terracotta) !important;
-  color: #ffffff !important;
+  background-color: var(--exp-atc-btn-bg, var(--exp-terracotta)) !important;
+  color: var(--exp-atc-btn-text, #ffffff) !important;
   border: none !important;
   border-radius: 10px !important;
   font-weight: 700 !important;
@@ -1590,7 +1600,7 @@ fieldset.exp-size-section,
 .product-form__submit:hover,
 .product-form__submit.button--primary:hover,
 .product-form__submit.button--secondary:hover {
-  background-color: var(--exp-terracotta-hover) !important;
+  background-color: var(--exp-atc-btn-hover, var(--exp-terracotta-hover)) !important;
   transform: translateY(-1px) !important;
   box-shadow: 0 6px 18px rgba(200, 90, 56, 0.3) !important;
 }
@@ -1692,7 +1702,7 @@ fieldset.exp-size-section,
     right: 0 !important;
     height: 100% !important;
     pointer-events: none !important;
-    z-index: 10 !important;
+    z-index: 2 !important;
   }
 
   .exp-media-badges__top-left {
@@ -2280,12 +2290,25 @@ fieldset.exp-size-section,
 
   .exp-related-header {
     margin-bottom: 14px;
-    gap: 2px;
+    gap: 4px;
   }
 
-  .exp-related-eyebrow,
+  .exp-related-eyebrow--hide-mobile,
+  .exp-related-subtitle--hide-mobile,
+  .exp-rel-card__excerpt--hide-mobile {
+    display: none !important;
+  }
+
+  .exp-related-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 1.2px;
+  }
+
   .exp-related-subtitle {
-    display: none;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--exp-text-muted);
+    margin: 2px 0 0;
   }
 
   .exp-related-heading {
