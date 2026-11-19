@@ -15,7 +15,14 @@
   "sections": {
     "related-products": {
       "settings": {
-        "show_rating": false
+        "show_rating": false,
+        "show_subtitle_mobile": false
+      },
+      "blocks": {}
+    },
+    "main": {
+      "settings": {
+        "color_scheme": "scheme-1"
       },
       "blocks": {}
     }
