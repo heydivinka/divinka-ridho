@@ -8,6 +8,8 @@
   - show_secondary_image: {Boolean}
   - show_vendor: {Boolean}
   - show_rating: {Boolean}
+  - show_card_excerpt: {Boolean}
+  - show_card_excerpt_mobile: {Boolean}
   - show_quick_add: {Boolean}
   - quick_add_label: {String}
 {% endcomment %}
@@ -126,8 +128,17 @@
           </a>
         </h3>
 
-        {%- if excerpt_text != blank -%}
-          <p class="exp-rel-card__excerpt">{{ excerpt_text | escape }}</p>
+        {%- assign show_card_desc = true -%}
+        {%- if show_card_excerpt == false -%}
+          {%- assign show_card_desc = false -%}
+        {%- endif -%}
+        {%- assign show_card_desc_mobile = true -%}
+        {%- if show_card_excerpt_mobile == false -%}
+          {%- assign show_card_desc_mobile = false -%}
+        {%- endif -%}
+
+        {%- if show_card_desc and excerpt_text != blank -%}
+          <p class="exp-rel-card__excerpt{% unless show_card_desc_mobile %} exp-rel-card__excerpt--hide-mobile{% endunless %}">{{ excerpt_text | escape }}</p>
         {%- endif -%}
 
         {%- if show_rating and card_product.metafields.reviews.rating.value != blank -%}

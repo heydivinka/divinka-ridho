@@ -31,13 +31,17 @@
     {% if recommendations.performed and recommendations.products_count > 0 %}
       <div class="exp-related-header">
         {%- if section.settings.eyebrow != blank -%}
-          <span class="exp-related-eyebrow">{{ section.settings.eyebrow | escape }}</span>
+          <span class="exp-related-eyebrow{% unless section.settings.show_eyebrow_mobile %} exp-related-eyebrow--hide-mobile{% endunless %}">
+            {{- section.settings.eyebrow | escape -}}
+          </span>
         {%- endif -%}
         <h2 class="related-products__heading exp-related-heading inline-richtext {{ section.settings.heading_size }}">
           {{ section.settings.heading }}
         </h2>
         {%- if section.settings.subtitle != blank -%}
-          <p class="exp-related-subtitle">{{ section.settings.subtitle | escape }}</p>
+          <p class="exp-related-subtitle{% unless section.settings.show_subtitle_mobile %} exp-related-subtitle--hide-mobile{% endunless %}">
+            {{- section.settings.subtitle | escape -}}
+          </p>
         {%- endif -%}
       </div>
 
@@ -53,6 +57,8 @@
               show_secondary_image: section.settings.show_secondary_image,
               show_vendor: section.settings.show_vendor,
               show_rating: section.settings.show_rating,
+              show_card_excerpt: section.settings.show_card_excerpt,
+              show_card_excerpt_mobile: section.settings.show_card_excerpt_mobile,
               show_quick_add: section.settings.show_quick_add,
               quick_add_label: section.settings.quick_add_label
             %}
@@ -83,6 +89,12 @@
       "default": "REKOMENDASI PILIHAN"
     },
     {
+      "type": "checkbox",
+      "id": "show_eyebrow_mobile",
+      "default": false,
+      "label": "Tampilkan Eyebrow di Mobile"
+    },
+    {
       "type": "inline_richtext",
       "id": "heading",
       "default": "t:sections.related-products.settings.paragraph__1.default",
@@ -93,6 +105,12 @@
       "id": "subtitle",
       "label": "Subjudul Singkat",
       "default": "Lengkapi pengalaman belanja Anda dengan pasangan produk terbaiknya."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subtitle_mobile",
+      "default": false,
+      "label": "Tampilkan Subjudul di Mobile"
     },
     {
       "type": "select",
@@ -245,6 +263,18 @@
       "default": false,
       "label": "t:sections.related-products.settings.show_rating.label",
       "info": "t:sections.related-products.settings.show_rating.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_card_excerpt",
+      "default": true,
+      "label": "Tampilkan Deskripsi Singkat Produk"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_card_excerpt_mobile",
+      "default": true,
+      "label": "Tampilkan Deskripsi Singkat di Mobile"
     },
     {
       "type": "checkbox",
