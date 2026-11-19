@@ -38,6 +38,12 @@
         padding-bottom: {{ section.settings.padding_bottom }}px;
       }
     }
+
+    #MainProduct-{{ section.id }} {
+      --exp-atc-btn-bg: {{ section.settings.atc_btn_background | default: '#C85A38' }};
+      --exp-atc-btn-text: {{ section.settings.atc_btn_text_color | default: '#FFFFFF' }};
+      --exp-atc-btn-hover: {{ section.settings.atc_btn_hover_background | default: '#B04928' }};
+    }
   {%- endstyle -%}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
@@ -2725,6 +2731,28 @@
       "id": "sticky_atc_show_trust_badges",
       "label": "Tampilkan Trust Badges di Sticky Bar",
       "default": true
+    },
+    {
+      "type": "header",
+      "content": "Tombol Add to Cart (PDP)"
+    },
+    {
+      "type": "color",
+      "id": "atc_btn_background",
+      "label": "Warna Tombol Add to Cart",
+      "default": "#C85A38"
+    },
+    {
+      "type": "color",
+      "id": "atc_btn_text_color",
+      "label": "Warna Teks Tombol Add to Cart",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "atc_btn_hover_background",
+      "label": "Warna Hover Tombol",
+      "default": "#B04928"
     }
   ]
 }
